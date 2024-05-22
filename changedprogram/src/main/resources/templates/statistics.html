@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Statistics</title>
+    <!-- Bootstrap CSS from CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/css/styles.css}" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:src="@{/js/scripts.js}"></script>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/data}">Adatok</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/ppt}">Oktatás</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/dataupload}">Adat feltöltés</a>
+            </li>
+            <!-- New Fields -->
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/datas}">Datas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/results}">Results</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="text-center">User Quiz Statistics</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Average Score per Attempt</h5>
+                    <canvas id="averageScoreChart" width="100" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Number of Attempts per Quiz Attempt Number</h5>
+                    <canvas id="attemptCountChart" width="100" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5 class="card-title">Successful Attempts per Quiz Attempt Number</h5>
+                    <canvas id="successfulAttemptChart" width="100" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var averageScores = /*[[${averageScores}]]*/ {};
+    var attemptCounts = /*[[${attemptCounts}]]*/ {};
+    var successfulAttempts = /*[[${successfulAttempts}]]*/ {};
+    var labels = Object.keys(averageScores);
+    var avgData = Object.values(averageScores);
+    var countData = Object.values(attemptCounts);
+    var successData = Object.values(successfulAttempts);
+
+    // Average Score Chart
+    var ctxAvg = document.getElementById('averageScoreChart').getContext('2d');
+    var avgChart = new Chart(ctxAvg, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Score Percentage',
+                data: avgData,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    onClick: (e, legendItem, legend) => {
+                        var index = legendItem.datasetIndex;
+                        var ci = legend.chart;
+                        var meta = ci.getDatasetMeta(index);
+
+                        // Toggle the visibility of the dataset
+                        meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                        ci.update();
+                    }
+                }
+            }
+        }
+    });
+
+    // Attempt Count Pie Chart
+    var ctxCount = document.getElementById('attemptCountChart').getContext('2d');
+    var countChart = new Chart(ctxCount, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Number of Attempts',
+                data: countData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    onClick: (e, legendItem, legend) => {
+                        var index = legendItem.datasetIndex;
+                        var ci = legend.chart;
+                        var meta = ci.getDatasetMeta(index);
+
+                        // Toggle the visibility of the dataset
+                        meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                        ci.update();
+                    }
+                }
+            }
+        }
+    });
+
+    // Successful Attempt Pie Chart
+    var ctxSuccess = document.getElementById('successfulAttemptChart').getContext('2d');
+    var successChart = new Chart(ctxSuccess, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Successful Attempts',
+                data: successData,
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    onClick: (e, legendItem, legend) => {
+                        var index = legendItem.datasetIndex;
+                        var ci = legend.chart;
+                        var meta = ci.getDatasetMeta(index);
+
+                        // Toggle the visibility of the dataset
+                        meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
+                        ci.update();
+                    }
+                }
+            }
+        }
+    });
+    /*]]>*/
+</script>
+
+</body>
+</html>

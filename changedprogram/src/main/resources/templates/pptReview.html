@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Review PPT</title>
+<script th:inline="javascript">
+	/*<![CDATA[*/
+	var images = /*[[${images}]]*/[];
+	/*]]>*/
+
+	var currentImageIndex = 0;
+
+	function showImage(index) {
+		currentImageIndex = index;
+		var base64Image = images[index];
+		if (base64Image) { // Check if base64Image is not undefined
+			document.getElementById('pptImage').src = 'data:image/png;base64,'
+					+ base64Image;
+		} else {
+			console.error('Invalid image at index: ' + index);
+		}
+		document.getElementById('previousButton').disabled = index == 0;
+		document.getElementById('nextButton').disabled = index == images.length - 1;
+	}
+
+	function nextImage() {
+		if (currentImageIndex < images.length - 1) {
+			showImage(currentImageIndex + 1);
+		}
+	}
+
+	function previousImage() {
+		if (currentImageIndex > 0) {
+			showImage(currentImageIndex - 1);
+		}
+	}
+
+	window.onload = function() {
+		// Ensure images is a valid array and has at least one image.
+		if (Array.isArray(images) && images.length > 0) {
+			showImage(currentImageIndex);
+		} else {
+			console.error('No images found or images is not an array.');
+		}
+	};
+</script>
+</head>
+<body>
+
+	<h1>
+		Review PPT: <span th:text="${ppt.filename}"></span>
+	</h1>
+
+	<button id="previousButton" onclick="previousImage()">Previous</button>
+	<img id="pptImage" />
+	<button id="nextButton" onclick="nextImage()">Next</button>
+    <form th:action="@{/admin/ppt}" method="get">
+        <button type="submit">Back to PPT Page</button>
+    </form>
+</body>
+</html>

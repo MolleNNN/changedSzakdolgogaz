@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Attempts Summary</title>
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/data}">Adatok</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/ppt}">Oktatás</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/dataupload}">Adat feltöltés</a>
+            </li>
+            <!-- New Fields -->
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/datas}">Datas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/results}">Results</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+  <div class="container mt-5">
+    <h2>Quiz Attempts Summary</h2>
+    <table id="quizAttemptsTable" class="display">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Quiz Attempts</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be populated here by DataTables -->
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Modal -->
+<div class="modal fade" id="responseModal" tabindex="-1" role="dialog" aria-labelledby="responseModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="responseModalLabel">Quiz Responses</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="responseTable" class="display">
+                    <thead>
+                        <tr>
+                            <th>Question</th>
+                            <th>Answer</th>
+                            <th>Correct</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here by AJAX -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- DataTables JS -->
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+$(document).ready(function() {
+    var table = $('#quizAttemptsTable').DataTable({
+        "ajax": {
+            "url": "/admin/results/api/quiz-attempts",
+            "dataSrc": ""
+        },
+        "columns": [
+            { "data": "name" },
+            { "data": "attempts" },
+            {
+                "data": null,
+                "render": function (data, type, row) {
+                    return `<button class='btn btn-primary view-details' data-user-id="${row.id}">View</button>`;
+                }
+            }
+        ]
+    });
+
+    $('#quizAttemptsTable tbody').on('click', 'button.view-details', function () {
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+        } else {
+            var userId = $(this).data('user-id');
+            console.log("Fetching details for user ID:", userId); // Log the user ID
+            $.ajax({
+                url: '/admin/results/api/quiz-attempts/' + userId + '/details',
+                method: 'GET',
+                success: function (data) {
+                    console.log("Details fetched:", data); // Log the data fetched
+                    var childTable = '<table class="display">' +
+                        '<thead>' +
+                        '<tr>' +
+                        '<th>PPT filename</th>' +
+                        '<th>Quiz attempt number</th>' +
+                        '<th>Percentage</th>' +
+                        '<th>Timestamp</th>' +
+                        '<th>Language</th>' +
+                        '<th>Type</th>' +
+                        '<th>Action</th>' +
+                        '</tr>' +
+                        '</thead>' +
+                        '<tbody>';
+                    data.forEach(function (attempt) {
+                        console.log("Attempt data:", attempt); // Log each attempt data
+                        childTable += '<tr>' +
+                            '<td>' + attempt.pptFileName + '</td>' +
+                            '<td>' + attempt.attemptNumber + '</td>' +
+                            '<td>' + attempt.percentage + '</td>' +
+                            '<td>' + attempt.timestamp + '</td>' +
+                            '<td>' + attempt.languageName + '</td>' +
+                            '<td>' + attempt.typeName + '</td>' +
+                            '<td><button class="btn btn-primary view-responses" data-attempt-id="' + attempt.id + '">View</button></td>' +
+                            '</tr>';
+                    });
+                    childTable += '</tbody></table>';
+                    row.child(childTable).show();
+                    tr.addClass('shown');
+                }
+            });
+        }
+    });
+
+    $('#quizAttemptsTable tbody').on('click', 'button.view-responses', function () {
+        var quizAttemptId = $(this).data('attempt-id');
+        console.log("Fetching responses for quiz attempt ID:", quizAttemptId); // Log the quiz attempt ID
+        $.ajax({
+            url: '/admin/results/api/quiz-attempts/' + quizAttemptId + '/responses',
+            method: 'GET',
+            success: function (data) {
+                console.log("Responses fetched:", data); // Log the responses fetched
+                var responseTable = $('#responseTable').DataTable();
+                responseTable.clear();
+                data.forEach(function (response) {
+                    console.log("Response data:", response); // Log each response data
+                    responseTable.row.add({
+                        "questionText": response.questionText,
+                        "response": response.response,
+                        "correct": response.correct // map directly from boolean correct
+                    }).draw();
+                });
+                $('#responseModal').modal('show');
+            }
+        });
+    });
+
+    $('#responseTable').DataTable({
+        "columns": [
+            { "data": "questionText" },
+            { "data": "response" },
+            { "data": "correct" } // changed from isCorrect
+        ],
+        "createdRow": function(row, data, dataIndex) {
+            if (data.correct === true) { // Directly check for true
+                $(row).addClass('table-success');
+            } else if (data.correct === false) { // Directly check for false
+                $(row).addClass('table-danger');
+            }
+        }
+    });
+});
+</script>
+</body>
+</html>

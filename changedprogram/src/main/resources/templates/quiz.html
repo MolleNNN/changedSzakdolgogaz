@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{quiz.title}">Quiz Page</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <style>
+        body {
+            background-color: #ccffcc; /* Light green background */
+        }
+        .question-card {
+            max-width: 600px; /* Fixed width */
+            margin: auto; /* Center the card horizontally */
+            padding: 20px; /* Padding inside the card */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            background: white; /* White background for the card */
+            border-radius: 8px; /* Rounded corners for the card */
+        }
+        .question-container {
+            display: flex;
+            height: 100vh; /* Full viewport height */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+        }
+    </style>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<body>
+    <div class="question-container">
+        <div class="question-card">
+            <p id="questionCounter">
+                <span th:text="#{quiz.questionCounter}">Question</span> 
+                <span id="currentQuestionNumber">[[${currentQuestionIndex}]]</span> 
+                <span th:text="#{quiz.of}">of</span> 
+                [[${totalQuestions}]]
+            </p>
+            <p id="questionText">[[${question.text}]]</p>
+            <form id="answerForm" th:action="@{/nextQuestion}" method="post">
+                <!-- CSRF Token -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="answer" value="true" id="trueOption" required>
+                    <label class="form-check-label" for="trueOption" th:text="#{quiz.trueOption}">True</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="answer" value="false" id="falseOption">
+                    <label class="form-check-label" for="falseOption" th:text="#{quiz.falseOption}">False</label>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3" th:text="#{quiz.submit}">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        const messages = {
+            processError: /*[[#{quiz.processError}]]*/ 'Error processing the quiz.',
+            fetchError: /*[[#{quiz.error}]]*/ 'Error fetching the next question.'
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('answerForm');
+
+            // Retrieve CSRF token and header name from the meta tags
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const csrfHeaderName = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+            form.onsubmit = function(event) {
+                event.preventDefault();  // Prevent the default form submission
+                const formData = new FormData(form);
+
+                // Use the Fetch API to send the form data along with the CSRF token
+                fetch('/nextQuestion', {
+                    method: 'POST',
+                    headers: {
+                        [csrfHeaderName]: csrfToken,  // Add CSRF token to the request headers
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams(formData)
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data); // Log the response data to see the structure and values
+
+                    // Update the page with new question details
+                    if (data.completed) {
+                        fetch('/processQuiz', {
+                            method: 'POST',
+                            headers: {
+                                [csrfHeaderName]: csrfToken,  // Add CSRF token to the request headers
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }
+                        }).then(response => {
+                            if (response.ok) {
+                                window.location.href = '/summarize';
+                            } else {
+                                throw new Error('Quiz processing failed');
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                            alert(messages.processError);
+                        });
+                    } else {
+                        document.getElementById('questionText').innerText = data.questionText;
+                        document.getElementById('currentQuestionNumber').innerText = data.currentQuestionIndex + 1;  // Correctly update the question number
+
+                        // Reset radio buttons for the next question
+                        document.querySelector('input[name="answer"][value="true"]').checked = false;
+                        document.querySelector('input[name="answer"][value="false"]').checked = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(messages.fetchError);
+                });
+            };
+        });
+    </script>
+</body>
+</html>

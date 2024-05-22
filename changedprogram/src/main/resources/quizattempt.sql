@@ -1,0 +1,1 @@
+ALTER TABLE quiz_attempt MODIFY COLUMN timestamp DATETIME(0);

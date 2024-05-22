@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.1.3/css/rowGroup.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.3/css/buttons.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.2.1/css/fixedHeader.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/colreorder/1.5.5/css/colReorder.dataTables.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/css/styles.css}" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script th:src="@{/js/scripts.js}"></script>
+    <style>
+        .dtrg-group, .dtrg-start, .dtrg-end {
+            display: none !important;
+        }
+        .dataTables_length {
+            display: inline-block;
+            margin-left: 15px;
+        }
+        
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/rowgroup/1.1.3/js/dataTables.rowGroup.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.2.3/js/buttons.colVis.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.2.1/js/dataTables.fixedHeader.min.js"></script>
+    <script src="https://cdn.datatables.net/colreorder/1.5.5/js/dataTables.colReorder.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        var table = $('#userTable').DataTable({
+            "ajax": {
+                "url": "/admin/datas/data",
+                "dataSrc": ""
+            },
+            "columns": [
+                { "data": "id" },
+                { "data": "name" },
+                { "data": "email" },
+                { "data": "active" },
+                { 
+                    "data": "birthdate",
+                    "render": function(data) {
+                        var date = new Date(data);
+                        return date.toLocaleDateString();
+                    }
+                },
+                { "data": "positionName" },
+                { "data": "receiverName" },
+                { "data": "companyName" },
+                { "data": "taxNumber" },
+                { "data": "phoneNumber" },
+                {
+                    "data": null,
+                    "defaultContent": "<button class='btn btn-primary view-results-btn'>View Results</button>"
+                }
+            ],
+            "rowGroup": {
+                "dataSrc": "id"
+            },
+            "dom": '<"top"Bfl>rt<"bottom"ip><"clear">',  // Adjust the DOM to include length menu next to buttons
+            "buttons": [
+                'colvis'  // Column visibility button
+            ],
+            "fixedHeader": true,  // Enable fixed header
+            "colReorder": true,   // Enable column reorder
+            "lengthMenu": [10, 25, 50, 100],  // Add the length menu for entries per page
+            "pageLength": 10  // Default number of entries per page
+        });
+
+        $('#userTable tbody').on('click', 'button.view-results-btn', function() {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+            var rowId = row.data().id;
+
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                $.ajax({
+                    url: "/admin/datas/results/" + rowId,
+                    method: "GET",
+                    success: function(resultsData) {
+                        var childHtml = '<table class="table child-table display" style="width:100%"><thead><tr><th>PPT Name</th><th>Filled</th><th>Valid</th><th>Notification Sent</th><th>Signature</th></tr></thead><tbody>';
+                        resultsData.forEach(function(result) {
+                            childHtml += '<tr>';
+                            childHtml += '<td>' + result.pptName + '</td>';
+                            childHtml += '<td>' + new Date(result.filled).toLocaleDateString() + '</td>';
+                            childHtml += '<td>' + new Date(result.valid).toLocaleDateString() + '</td>';
+                            childHtml += '<td>' + result.notificationSent + '</td>';
+                            childHtml += '<td><button class="btn btn-secondary view-signature-btn" data-signature="' + result.signature + '">View</button></td>';
+                            childHtml += '</tr>';
+                        });
+                        childHtml += '</tbody></table>';
+                        row.child(childHtml).show();
+                        tr.addClass('shown');
+
+                        // Initialize DataTable for child table with ordering enabled
+                        var childTable = $(tr).next('tr').find('.child-table').DataTable({
+                            searching: false,  // Disable internal search
+                            paging: false,     // Disable paging
+                            info: true,        // Enable info display for entries
+                            fixedHeader: true, // Enable fixed header
+                            colReorder: true   // Enable column reorder
+                        });
+                    }
+                });
+            }
+        });
+
+        $('#userTable tbody').on('click', 'button.view-signature-btn', function() {
+            const signature = $(this).data('signature');
+            $('#signatureImage').attr('src', 'data:image/png;base64,' + signature);
+            $('#signatureModal').modal('show');
+        });
+
+        // Custom search function
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+            var searchTerm = table.search().toLowerCase();
+            var mainRowData = data.join(' ').toLowerCase();
+            var mainTableRow = table.row(dataIndex).node();
+
+            // Check if the search term is in the main row
+            if (mainRowData.includes(searchTerm)) {
+                return true;
+            }
+
+            // Check if the search term is in any child row
+            if ($(mainTableRow).hasClass('shown')) {
+                var childRow = $(mainTableRow).next('tr.child');
+                var childTable = childRow.find('.child-table').DataTable();
+
+                var match = false;
+                childTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+                    var rowData = this.data();
+                    var rowText = Object.values(rowData).join(' ').toLowerCase();
+                    if (rowText.includes(searchTerm)) {
+                        match = true;
+                        return false;  // Break the loop
+                    }
+                });
+
+                return match;
+            }
+
+            return false;
+        });
+
+        // Redraw table when the global search is updated
+        $('#userTable_filter input').on('keyup', function() {
+            table.draw();
+        });
+
+        // Example passive event listener for scroll
+        document.addEventListener('scroll', function(e) {
+            // Your code here
+        }, { passive: true });
+    });
+    </script>
+    </head>
+    <body>
+    <!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/data}">Adatok</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/ppt}">Oktatás</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/dataupload}">Adat feltöltés</a>
+            </li>
+            <!-- New Fields -->
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/datas}">Datas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/results}">Results</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+    
+    <div class="container">
+        <h2>User Data</h2>
+        <table id="userTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Active</th>
+                    <th>Birthdate</th>
+                    <th>Position</th>
+                    <th>Receiver</th>
+                    <th>Company</th>
+                    <th>Tax Number</th>
+                    <th>Phone Number</th>
+                    <th>Results</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="signatureModal" tabindex="-1" role="dialog" aria-labelledby="signatureModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="signatureModalLabel">Signature</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <img id="signatureImage" src="" class="img-fluid" alt="Signature Image">
+                </div>
+                <div class="modal-footer">
+                    <span class="text-muted">Click 'X' to close</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
+    </html>

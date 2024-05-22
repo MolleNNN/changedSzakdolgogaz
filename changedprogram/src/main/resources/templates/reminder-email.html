@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <p>Dear participants,</p>
+    <p>Your validation for "EHS oktatás" will expire soon. Please find your details below:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Birthdate</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Receiver</th>
+                <th>Company</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td th:text="${user.name}">Name</td>
+                <td th:text="${#dates.format(user.birthdate, 'dd MMMM yyyy')}">Birthdate</td>
+                <td th:text="${user.email}">Email</td>
+                <td th:text="${user.phoneNumber}">Phone Number</td>
+                <td th:text="${receiver.name}">Receiver Name</td>
+                <td th:text="${company.name}">Company Name</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>Regards,</p>
+    <p>Admin</p>
+</body>
+</html>

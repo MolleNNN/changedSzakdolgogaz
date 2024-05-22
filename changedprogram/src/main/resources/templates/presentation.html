@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${ppt.filename}">Active Presentation</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <style>
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ccffcc; /* Light green background */
+        }
+        #image-slider {
+            position: relative;
+            width: 800px; /* Adjust as needed */
+            height: 600px;
+        }
+        #progress-bar {
+            width: 100%;
+            height: 5px;
+            background-color: #ddd;
+        }
+        #fill-bar {
+            width: 0%;
+            height: 100%;
+            background-color: green;
+        }
+        #counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 5px;
+        }
+        #quiz-button {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: -50px; /* Adjust distance below the slider */
+        }
+    </style>
+</head>
+<body>
+    <div id="image-slider">
+        <img th:src="'data:image/png;base64,' + ${images[0]}" alt="Presentation Image" id="current-image" style="width: 100%; height: auto;"/>
+        <div id="progress-bar"><div id="fill-bar"></div></div>
+        <button onclick="navigate('prev')" id="prev-button" class="btn btn-secondary" style="display: none;">Previous</button>
+        <button onclick="navigate('next')" id="next-button" class="btn btn-primary" style="display: none;">Next</button>
+        <div id="counter">10</div>
+    </div>
+    <a th:href="@{/quiz}" class="btn btn-success" id="quiz-button" style="display: none; margin-top: 20px;">Go to Quiz</a>
+    
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var currentImageIndex = 0;
+        var images = /*[[${images}]]*/ [];
+        var countdownTimer;
+        var timerDuration = 10;
+        var visited = Array(images.length).fill(false);
+
+        function updateSlider() {
+            document.getElementById('fill-bar').style.width = ((currentImageIndex + 1) / images.length * 100) + '%';
+        }
+
+        function updateButtonVisibility() {
+            document.getElementById('prev-button').style.display = currentImageIndex > 0 ? 'block' : 'none';
+            document.getElementById('next-button').style.display = currentImageIndex < images.length - 1 ? 'block' : 'none';
+            document.getElementById('quiz-button').style.display = currentImageIndex === images.length - 1 ? 'block' : 'none';
+        }
+
+        function navigate(direction) {
+            if (direction === 'next' && currentImageIndex < images.length - 1) {
+                currentImageIndex++;
+                visited[currentImageIndex] = true; // Mark as visited when first time viewed
+            } else if (direction === 'prev' && currentImageIndex > 0) {
+                currentImageIndex--;
+            }
+            document.getElementById('current-image').src = 'data:image/png;base64,' + images[currentImageIndex];
+            document.getElementById('next-button').style.display = 'none'; // Always hide next on navigate
+            document.getElementById('prev-button').style.display = 'none'; // Always hide previous on navigate
+            startTimer();
+            updateSlider();
+        }
+
+        function startTimer() {
+            var counterElement = document.getElementById('counter');
+            var timeLeft = timerDuration;
+            counterElement.innerText = timeLeft;
+            counterElement.style.display = 'block';
+            clearInterval(countdownTimer);
+            countdownTimer = setInterval(function() {
+                timeLeft--;
+                counterElement.innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(countdownTimer);
+                    counterElement.style.display = 'none';
+                    updateButtonVisibility(); // Show buttons based on image position after countdown
+                }
+            }, 1000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSlider();
+            startTimer();  // Start the countdown when the page is loaded
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>

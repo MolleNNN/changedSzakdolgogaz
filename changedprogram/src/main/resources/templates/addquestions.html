@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Questions</title>
+    <meta name="csrf-token" th:content="${_csrf.token}"/>
+	<meta name="csrf-param" th:content="${_csrf.parameterName}"/>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        // CSRF token setup for AJAX
+        var csrfToken = $('meta[name="csrf-token"]').attr('content');
+        var csrfHeader = $('meta[name="csrf-param"]').attr('content');
+        
+        // Log CSRF token and header to the console
+        console.log("CSRF Token:", csrfToken);
+        console.log("CSRF Header:", csrfHeader);
+
+        // Setup AJAX to append CSRF token on each request
+        $.ajaxSetup({
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader(csrfHeader, csrfToken);
+                console.log("Sending CSRF Token:", csrfToken); // Log the token being sent
+
+            }
+        });
+
+        
+        // Handle form submission for new questions
+        $('#questionForm').on('submit', function(event) {
+            var questionInput = $('#question').val().trim();
+            if (questionInput.length < 4) {
+                alert('Question must be at least 4 characters long.');
+                event.preventDefault();
+            }
+        });
+
+        // Toggle the modification form visibility
+        $('#modifyButton').click(function() {
+            $('#modifyContainer').toggle();  // This should now correctly toggle the visibility
+        });
+
+        // Populate and show the modification form when a question is selected
+        $('#questionSelect').change(function() {
+            var selectedText = $(this).find('option:selected').data('text');
+            var selectedAnswer = $(this).find('option:selected').data('answer');
+            $('#editQuestionText').val(selectedText);
+            $('#editAnswer').val(selectedAnswer.toString());
+            $('#editQuestionForm').show();
+        });
+
+        // Handle the submission of the modified question
+        $('#editQuestionForm').on('submit', function(event) {
+            event.preventDefault();
+
+            var formData = {
+                questionId: $('#questionSelect').val(),
+                question: $('#editQuestionText').val().trim(),
+                answer: $('#editAnswer').val(),
+                [csrfHeader]: csrfToken  // Correct syntax for dynamic property names
+            };
+
+            $.ajax({
+                url: '/admin/modifyQuestion',
+                type: 'POST',
+                data: formData,
+                success: function(response) {
+                    console.log('Question updated successfully');
+                    alert('Question updated successfully');
+                    location.reload();  // Reload the page to show changes
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating question:', status, error);
+                    alert('Error updating question: ' + error);
+                }
+            });
+        });
+    });
+    $(document).ready(function() {
+        // CSRF token setup
+        var csrfToken = $('meta[name="csrf-token"]').attr('content');
+        var csrfHeader = $('meta[name="csrf-param"]').attr('content');
+
+        $('#deleteQuestionButton').click(function() {
+            $('#deleteContainer').toggle();
+        });
+
+        $('#confirmDeleteButton').click(function() {
+            var questionId = $('#deleteQuestionSelect').val();
+            if (questionId) {
+                var data = {
+                    questionId: questionId
+                };
+                data[csrfHeader] = csrfToken;  // Add CSRF token to the request data
+
+                $.ajax({
+                    url: '/admin/deleteQuestion',
+                    type: 'POST',
+                    data: data,
+                    success: function(response) {
+                        alert('Question deleted successfully');
+                        location.reload();  // Reload the page to reflect the changes
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Error deleting question: ' + error);
+                    }
+                });
+            } else {
+                alert('Please select a question to delete.');
+            }
+        });
+
+        $('#cancelDeleteButton').click(function() {
+            $('#deleteContainer').hide();
+        });
+    });
+
+    </script>
+</head>
+<body class="container mt-5">
+
+    <h1 class="mb-4">Add Questions for PPT: <span th:text="${pptName}"></span></h1>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Add New Question</h2>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/admin/addquestion}" method="post" id="questionForm">
+                <input type="hidden" name="pptId" th:value="${pptId}" />
+                <div class="form-group">
+                    <label for="question">Question:</label>
+                    <input type="text" id="question" name="question" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="answer">Answer:</label>
+                    <select id="answer" name="answer" class="form-control">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Upload Questions from Excel</h2>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/admin/uploadQuestions}" method="post" enctype="multipart/form-data">
+                <input type="hidden" name="pptId" th:value="${pptId}" />
+                <div class="form-group">
+                    <label for="file">Select Excel File:</label>
+                    <input type="file" id="file" name="file" class="form-control-file" accept=".xlsx,.xls" required>
+                </div>
+                <button type="submit" class="btn btn-success">Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Existing Questions</h2>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Answer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="question : ${questions}">
+                        <td th:text="${question.text}"></td>
+                        <td th:text="${question.answer}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- New Modification Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h2>Modify Question</h2>
+            <button id="modifyButton" class="btn btn-info">Modify</button>
+        </div>
+        <div class="card-body" id="modifyContainer" style="display: none;">
+            <select id="questionSelect" class="form-control mb-3">
+                <option value="" disabled selected>Select a question</option>
+                <th:block th:each="question : ${questions}">
+                    <option th:value="${question.id}" th:data-text="${question.text}" th:data-answer="${question.answer}">
+                        [[${question.text}]]
+                    </option>
+                </th:block>
+            </select>
+            <form id="editQuestionForm" style="display: none;">
+                <div class="form-group">
+                    <label for="editQuestionText">Question Text:</label>
+                    <input type="text" id="editQuestionText" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label for="editAnswer">Answer:</label>
+                    <select id="editAnswer" class="form-control">
+                        <option value="true">True</option>
+                        <option value="false">False</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success">Save Changes</button>
+            </form>
+        </div>
+    </div>
+<div class="card mb-4">
+    <div class="card-header">
+        <h2>Delete Question</h2>
+        <button id="deleteQuestionButton" class="btn btn-danger">Delete Question</button>
+    </div>
+    <div class="card-body" id="deleteContainer" style="display: none;">
+        <select id="deleteQuestionSelect" class="form-control mb-3">
+            <option value="" disabled selected>Select a question to delete</option>
+            <th:block th:each="question : ${questions}">
+                <option th:value="${question.id}" th:text="${question.text}"></option>
+            </th:block>
+        </select>
+        <button id="confirmDeleteButton" class="btn btn-danger">Delete</button>
+        <button id="cancelDeleteButton" class="btn btn-secondary">Cancel</button>
+    </div>
+</div>
+    <form th:action="@{/admin/ppt}" method="get" class="mt-3">
+        <button type="submit" class="btn btn-secondary">Back to PPT Page</button>
+    </form>
+
+
+</body>
+</html>

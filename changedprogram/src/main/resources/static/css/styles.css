@@ -1,0 +1,17 @@
+.bg-custom {
+    background-color: #e7f5e6 !important; /* Light green background */
+}
+.navbar-custom, .kezdolap-sign {
+    background-color: #4CAF50 !important; /* Dark green navbar */
+    color: black !important; /* Black text color */
+    font-weight: bold !important; /* Bold text */
+}
+.navbar-custom .navbar-nav .nav-link, .kezdolap-sign {
+    color: black !important;
+    font-weight: bold !important;
+    transition: color 0.3s; /* Smooth transition for color change */
+}
+.navbar-custom .navbar-nav .nav-link:hover, .kezdolap-sign:hover {
+    color: #fff !important; /* White text color on hover */
+    cursor: pointer;
+}

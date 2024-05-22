@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{summarize.title}">Quiz Summary</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <style>
+        body {
+            background-color: #ccffcc; /* Light green background */
+        }
+        .summary-card {
+            max-width: 600px; /* Fixed width */
+            margin: auto; /* Center the card horizontally */
+            padding: 20px; /* Padding inside the card */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+            background: white; /* White background for the card */
+            border-radius: 8px; /* Rounded corners for the card */
+            text-align: center;
+        }
+        .summary-container {
+            display: flex;
+            height: 100vh; /* Full viewport height */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
+        }
+    </style>
+</head>
+<body>
+    <div class="summary-container">
+        <div class="summary-card">
+            <h1 th:text="#{summarize.title}">Quiz Summary</h1>
+            <p>
+                <span th:text="#{summarize.yourScore}">Your Score:</span> 
+                <span th:text="${scorePercentage}">0</span>%
+            </p>
+            <p>
+                <span th:text="#{summarize.correctAnswers}">Correct Answers:</span> 
+                <span th:text="${correctAnswersCount}">0</span> 
+                <span th:text="#{summarize.outOf}">out of</span> 
+                <span th:text="${totalQuestions}">0</span>
+            </p>
+            <div th:if="${scorePercentage < 90}">
+                <a th:href="@{/quiz}" class="btn btn-warning" th:text="#{summarize.retry}">Retry</a>
+            </div>
+            <div th:if="${scorePercentage >= 90}">
+                <a th:href="@{/signature}" class="btn btn-success" th:text="#{summarize.moveToSignature}">Move to Signature</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

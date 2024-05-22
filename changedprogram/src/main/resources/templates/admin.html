@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    
+    <title>Admin felület</title>
+    <!-- Bootstrap 5 CSS -->
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- External CSS -->
+	<link rel="stylesheet" th:href="@{/css/styles.css}" />
+	    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	    <style>
+        .bg-custom {
+            background-color: #f8f9fa;
+        }
+
+        .navbar-custom {
+            background-color: #343a40;
+        }
+
+        .navbar-custom .navbar-brand, .navbar-custom .nav-link {
+            color: #ffffff;
+        }
+
+        .navbar-custom .navbar-brand:hover, .navbar-custom .nav-link:hover {
+            color: #d3d3d3;
+        }
+    </style>
+
+</head>
+<body class="bg-custom">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+    <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/data}">Adatok</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/ppt}">Oktatás</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/dataupload}">Adat feltöltés</a>
+            </li>
+            <!-- New Fields -->
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/datas}">Datas</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:href="@{/admin/results}">Results</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+
+     <div class="container">
+        <h1 class="mt-4">Üdv az admin pagen</h1>
+        <!-- Chart container -->
+        <div class="row">
+            <div class="col-md-6">
+                <canvas id="userChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script th:src="@{/js/scripts.js}"></script>
+     <script>
+        $(document).ready(function() {
+            $.get('/admin/user-stats', function(data) {
+                var ctx = document.getElementById('userChart').getContext('2d');
+                var userChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Active Users', 'Inactive Users'],
+                        datasets: [{
+                            data: [data.active, data.inactive],
+                            backgroundColor: ['#36a2eb', '#ff6384'],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.raw;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

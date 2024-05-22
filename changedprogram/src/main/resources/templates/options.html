@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{options.title}">Training Options</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #ccffcc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            border-radius: 8px;
+            background: #e6ffe6; /* Very light green background */
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            font-size: 1rem;
+            padding: 0.5rem 1.5rem;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 th:text="#{options.availableTraining}">Available Training:</h1>
+        <div th:if="${presentations != null}">
+            <ul>
+                <li th:each="ppt : ${presentations}">
+                    <p th:text="${ppt.filename}">Training Name</p>
+                    <form th:action="@{/presentation}" method="post">
+                        <input type="hidden" name="pptId" th:value="${ppt.id}" />
+                        <button type="submit" class="btn btn-primary" th:text="#{options.button.start}">Start</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        <div th:if="${presentations == null}">
+            <p th:text="#{options.message.noTraining}">No training available.</p>
+        </div>
+    </div>
+</body>
+</html>
