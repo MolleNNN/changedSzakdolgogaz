@@ -13,13 +13,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 public interface PositionRepository extends JpaRepository<Position, Long> {
-	boolean existsByName(String name);
+    boolean existsByName(String name);
     Optional<Position> findByNameIgnoreCase(String name);
 
-    
     @Query("SELECT new com.changedprogram.dto.PositionDTO(p.id, p.name) FROM Position p")
     List<PositionDTO> findAllPositionDTOs();
-    
-    @Query("SELECT new com.changedprogram.dto.PositionDTO(p.id, p.name) FROM Position p")
-    List<PositionDTO> findAllProjectedBy(Sort sort);
+
+    @Query("SELECT new com.changedprogram.dto.PositionDTO(p.id, p.name) FROM Position p ORDER BY p.name")
+    List<PositionDTO> findAllPositionDTOsSortedByName();
 }

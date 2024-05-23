@@ -18,6 +18,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     @Query("SELECT new com.changedprogram.dto.CompanyDTO(c.id, c.name) FROM Company c")
     List<CompanyDTO> findAllCompanyDTOs();
     
-    @Query("SELECT new com.changedprogram.dto.CompanyDTO(c.id, c.name) FROM Company c")
-    List<CompanyDTO> findAllProjectedBy(Sort sort);
+    @Query("SELECT new com.changedprogram.dto.CompanyDTO(c.id, c.name) FROM Company c ORDER BY c.name")
+    List<CompanyDTO> findAllCompanyDTOsSortedByName();
 }

@@ -16,7 +16,7 @@ public interface ReceiverRepository extends JpaRepository<Receiver, Long> {
 
     @Query("SELECT new com.changedprogram.dto.ReceiverDTO(r.id, r.name) FROM Receiver r")
     List<ReceiverDTO> findAllReceiverDTOs();
-    
-    @Query("SELECT new com.changedprogram.dto.ReceiverDTO(r.id, r.name) FROM Receiver r")
-    List<ReceiverDTO> findAllProjectedBy(Sort sort);
+
+    @Query("SELECT new com.changedprogram.dto.ReceiverDTO(r.id, r.name) FROM Receiver r ORDER BY r.name")
+    List<ReceiverDTO> findAllReceiverDTOsSortedByName();
 }

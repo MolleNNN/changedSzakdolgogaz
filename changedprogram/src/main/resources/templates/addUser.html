@@ -1,160 +1,262 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title th:text="#{adduser.title}">EHS oktatás</title>
-<!-- Bootstrap CSS from CDN for modern styling -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-<style>
-/* Your existing styles */
-body {
-    background-color: #ccffcc; /* Light green background */
-    color: #333; /* Dark grey text for better readability */
-}
+    <meta charset="UTF-8">
+    <title th:text="#{adduser.title}">EHS oktatás</title>
+    <!-- Bootstrap CSS from CDN for modern styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
+    <style>
+        /* Your existing styles */
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-.container {
-    max-width: 900px; /* Optimal width for form */
-    margin: 2rem auto;
-    /* Center align the form and give some margin from top */
-    padding: 2rem;
-    background-color: #ffffff; /* White background */
-    border-radius: 0.5rem; /* Rounded corners for modern look */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-}
+        .background-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
+            z-index: -1;
+            opacity: 0.8;
+        }
 
-h1 {
-    font-size: 2.5rem;
-    color: #333;
-}
-.btn-primary {
-    font-size: 1.2rem;
-    padding: 10px 20px;
-    background-color: #004085;
-    border-color: #004085;
-}
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-}
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            box-sizing: border-box;
+        }
 
-.error-message {
-    color: #dc3545; /* Bootstrap danger color for errors */
-    margin-top: 0.25rem;
-    font-size: 0.875em;
-}
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            max-width: 900px;
+            text-align: center;
+            box-sizing: border-box;
+        }
 
-.form-label {
-    font-weight: 500; /* Slightly bolder labels for better focus */
-}
+        h1 {
+            font-size: 2.5rem;
+            color: #007bff;
+        }
 
-input[type="date"] {
-    max-width: 200px;
-}
+        .btn-primary {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            background-color: #004085;
+            border-color: #004085;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
 
-select:invalid {
-    color: gray;
-}
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
 
-@media ( max-width : 768px) {
-    .container {
-        padding: 1rem; /* Smaller padding on smaller screens */
-    }
-}
-</style>
+        .error-message {
+            color: #dc3545;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+        }
+
+        .form-label {
+            font-weight: 700;
+        }
+
+        select:invalid {
+            color: gray;
+        }
+
+        select option {
+            color: black;
+        }
+
+        select option:first-child {
+            color: gray;
+        }
+
+        .input-group-append {
+            cursor: pointer;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .tax-number-group {
+            display: flex;
+            justify-content: center;
+        }
+
+        .tax-number-group .form-group {
+            flex: 0 0 50%;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .tax-number-group .form-group {
+                flex: 0 0 100%;
+            }
+        }
+    </style>
 </head>
 <body>
-<div class="container shadow-sm bg-white rounded">
-    <h1 class="text-center mb-4" th:text="#{adduser.title}">Adatok megadása</h1>
-    <form th:action="@{/add}" th:object="${userForm}" method="post" class="needs-validation" novalidate>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="name" class="form-label" th:text="#{adduser.name}">Név:</label>
-                    <input type="text" id="name" th:field="*{name}" th:placeholder="#{adduser.name.placeholder}" class="form-control" required>
-                    <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error-message"></div>
+    <div class="background-wrapper"></div>
+    <div class="content-wrapper">
+        <div class="container shadow-sm bg-white rounded">
+            <h1 class="text-center mb-4" th:text="#{adduser.title}">Adatok megadása</h1>
+            
+            <!-- Display error message if any -->
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            
+            <form th:action="@{/add}" th:object="${userForm}" method="post" class="needs-validation" novalidate id="userForm">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name" class="form-label" th:text="#{adduser.name}">Név:</label>
+                            <input type="text" id="name" th:field="*{name}" th:placeholder="#{adduser.name.placeholder}" class="form-control" required>
+                            <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error-message"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="birthdate" class="form-label" th:text="#{adduser.birthdate}">Születési idő:</label>
+                            <input type="text" id="birthdate" th:field="*{birthdate}" class="form-control" th:placeholder="#{adduser.birthdate.format}" required readonly>
+                            <div th:if="${#fields.hasErrors('birthdate')}" th:errors="*{birthdate}" class="error-message"></div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="birthdate" class="form-label" th:text="#{adduser.birthdate}">Születési idő:</label>
-                    <input min="1000-01-01" max="9999-12-31" type="date" id="birthdate" th:field="*{birthdate}" class="form-control" required>
-                    <div th:if="${#fields.hasErrors('birthdate')}" th:errors="*{birthdate}" class="error-message"></div>
+                <div class="tax-number-group">
+                    <div class="form-group">
+                        <label for="taxNumber" class="form-label" th:text="#{adduser.taxNumber}">Adószám:</label>
+                        <input type="text" id="taxNumber" th:field="*{taxNumber}" th:placeholder="#{adduser.taxNumber.placeholder}" class="form-control" maxlength="10" pattern="\d{10}" required>
+                        <div th:if="${#fields.hasErrors('taxNumber')}" th:errors="*{taxNumber}" class="error-message"></div>
+                    </div>
                 </div>
-            </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email" class="form-label" th:text="#{adduser.email}">Email:</label>
+                            <input type="email" id="email" th:field="*{email}" th:placeholder="#{adduser.email.placeholder}" class="form-control" required>
+                            <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="phoneNumber" class="form-label" th:text="#{adduser.phoneNumber}">Telefonszám:</label>
+                            <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" th:attr="placeholder='+36123456789'" class="form-control" required>
+                            <div th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error-message"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="position" class="form-label" th:text="#{adduser.position}">Pozíció:</label>
+                            <select id="position" th:field="*{positionId}" class="form-select" required>
+                                <option value="" selected th:text="#{adduser.selectPosition}">Válaszd ki a pozíciót</option>
+                                <option th:each="position : ${positions}" th:value="${position.id}" th:text="${position.name}"></option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('positionId')}" th:errors="*{positionId}" class="error-message"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="receiverId" class="form-label" th:text="#{adduser.receiver}">Fogadó fél:</label>
+                            <select id="receiverId" th:field="*{receiverId}" class="form-select" required>
+                                <option value="" selected th:text="#{adduser.selectReceiver}">Válaszd ki a fogadó felet</option>
+                                <option th:each="receiver : ${receivers}" th:value="${receiver.id}" th:text="${receiver.name}"></option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('receiverId')}" th:errors="*{receiverId}" class="error-message"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="companyId" class="form-label" th:text="#{adduser.company}">Cég:</label>
+                            <select id="companyId" th:field="*{companyId}" class="form-select" required>
+                                <option value="" selected th:text="#{adduser.selectCompany}">Válaszd ki a céget</option>
+                                <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}"></option>
+                            </select>
+                            <div th:if="${#fields.hasErrors('companyId')}" th:errors="*{companyId}" class="error-message"></div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3" th:text="#{adduser.submit}">Elküld</button>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="taxNumber" class="form-label" th:text="#{adduser.taxNumber}">Adószám:</label>
-            <input type="text" id="taxNumber" th:field="*{taxNumber}" th:placeholder="#{adduser.taxNumber.placeholder}" class="form-control" maxlength="10" pattern="\d{10}" required>
-            <div th:if="${#fields.hasErrors('taxNumber')}" th:errors="*{taxNumber}" class="error-message"></div>
-        </div>
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="email" class="form-label" th:text="#{adduser.email}">Email:</label>
-                    <input type="email" id="email" th:field="*{email}" th:placeholder="#{adduser.email.placeholder}" class="form-control" required>
-                    <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    <label for="phoneNumber" class="form-label" th:text="#{adduser.phoneNumber}">Telefonszám:</label>
-                    <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" th:attr="placeholder='+36123456789'" class="form-control" required>
-                    <div th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error-message"></div>
-                </div>
-            </div>
-        </div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="position" class="form-label" th:text="#{adduser.position}">Pozíció:</label>
-                    <select id="position" th:field="*{positionId}" class="form-select" required>
-                        <option value="" selected th:text="#{adduser.selectPosition}">Válaszd ki a pozíciót</option>
-                        <option th:each="position : ${positions}" th:value="${position.id}" th:text="${position.name}"></option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('positionId')}" th:errors="*{positionId}" class="error-message"></div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="receiverId" class="form-label" th:text="#{adduser.receiver}">Fogadó fél:</label>
-                    <select id="receiverId" th:field="*{receiverId}" class="form-select" required>
-                        <option value="" selected th:text="#{adduser.selectReceiver}">Válaszd ki a fogadó felet</option>
-                        <option th:each="receiver : ${receivers}" th:value="${receiver.id}" th:text="${receiver.name}"></option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('receiverId')}" th:errors="*{receiverId}" class="error-message"></div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label for="companyId" class="form-label" th:text="#{adduser.company}">Cég:</label>
-                    <select id="companyId" th:field="*{companyId}" class="form-select" required>
-                        <option value="" selected th:text="#{adduser.selectCompany}">Válaszd ki a céget</option>
-                        <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}"></option>
-                    </select>
-                    <div th:if="${#fields.hasErrors('companyId')}" th:errors="*{companyId}" class="error-message"></div>
-                </div>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary mt-3" th:text="#{adduser.submit}">Elküld</button>
-    </form>
-</div>
+    </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var taxNumberInput = document.getElementById("taxNumber");
 
-<!-- Optional: Include Bootstrap JS for functionality -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var taxNumberInput = document.getElementById("taxNumber");
+            taxNumberInput.addEventListener("input", function() {
+                // Remove any non-digit characters
+                this.value = this.value.replace(/\D/g, '');
 
-        taxNumberInput.addEventListener("input", function() {
-            // Remove any non-digit characters
-            this.value = this.value.replace(/\D/g, '');
+                // Limit the length to 10 characters
+                if (this.value.length > 10) {
+                    this.value = this.value.slice(0, 10);
+                }
+            });
 
-            // Limit the length to 10 characters
-            if (this.value.length > 10) {
-                this.value = this.value.slice(0, 10);
+            // Initialize the datepicker with the localized format and correct container
+            var birthdateInput = $('#birthdate');
+            birthdateInput.datepicker({
+                format: 'yyyy.mm.dd',  // Explicitly set the format to 'yyyy.mm.dd'
+                container: '.content-wrapper',
+                autoclose: true,
+                orientation: "bottom"  // Always display the datepicker below the input field
+            });
+
+            // Convert the date to 'YYYY-MM-DD' format before form submission
+            $('#userForm').on('submit', function(e) {
+                var dateValue = birthdateInput.datepicker('getDate');
+                if (dateValue) {
+                    var formattedDate = new Date(dateValue).toISOString().split('T')[0];  // Format to 'YYYY-MM-DD'
+                    $('#birthdate').val(formattedDate);
+                }
+            });
+
+            // Convert 'YYYY-MM-DD' to 'YYYY.MM.DD' format when the page loads or form is rendered
+            function convertDateFormat(dateString) {
+                return dateString.replace(/-/g, '.');
+            }
+
+            var initialDateValue = birthdateInput.val();
+            if (initialDateValue) {
+                birthdateInput.val(convertDateFormat(initialDateValue));
             }
         });
-    });
-</script>
+    </script>
 </body>
 </html>

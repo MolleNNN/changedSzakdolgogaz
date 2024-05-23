@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,8 +30,7 @@ public class LanguageController {
     private LocaleResolver localeResolver;
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    
-    
+
     @GetMapping("/")
     public String welcome(HttpSession session, HttpServletRequest request, HttpServletResponse response) {
         Long userId = (Long) session.getAttribute("userId");
@@ -39,7 +39,7 @@ public class LanguageController {
         logger.debug("Welcome page accessed. Current session attributes - User ID: {}, Language: {}", userId, sessionLanguage);
 
         if (sessionLanguage == null) {
-            sessionLanguage = "hu"; // Default to English if no language is set
+            sessionLanguage = "hu"; // Default to Hungarian if no language is set
             session.setAttribute("sessionLanguage", sessionLanguage);
         }
 
@@ -54,23 +54,42 @@ public class LanguageController {
     @PostMapping("/change-language")
     public String changeLanguage(HttpServletRequest request, HttpServletResponse response,
                                  @RequestParam("lang") String lang, HttpSession session) throws IOException {
-        String query = "SELECT code FROM language WHERE code = ?";
-        String languageCode = jdbcTemplate.queryForObject(query, new Object[]{lang}, String.class);
+        try {
+            String query = "SELECT code FROM language WHERE code = ?";
+            String languageCode = jdbcTemplate.queryForObject(query, new Object[]{lang}, String.class);
 
-        if (languageCode != null) {
-            Locale locale = new Locale(languageCode);
-            localeResolver.setLocale(request, response, locale);
-            session.setAttribute("sessionLanguage", languageCode);  // Store language in session
+            if (languageCode != null) {
+                Locale locale = new Locale(languageCode);
+                localeResolver.setLocale(request, response, locale);
+                session.setAttribute("sessionLanguage", languageCode);  // Store language in session
 
-            logger.info("Language changed to: {}. Session language set to: {}", languageCode, session.getAttribute("sessionLanguage"));
-        } else {
-            logger.warn("Invalid language code: {}", lang);
+                logger.info("Language changed to: {}. Session language set to: {}", languageCode, session.getAttribute("sessionLanguage"));
+            } else {
+                logger.warn("Invalid language code: {}", lang);
+            }
+        } catch (Exception e) {
+            logger.error("Error occurred while changing language: ", e);
+            return handleException(request, e, response);
         }
+
         logSessionAttributes(session); // Log session attributes
         return "redirect:/";
     }
-    
-    public void logSessionAttributes(HttpSession session) {
+
+    @ExceptionHandler(Exception.class)
+    public String handleException(HttpServletRequest request, Exception ex, HttpServletResponse response) {
+        logger.error("Request: " + request.getRequestURL() + " raised " + ex);
+
+        try {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again later.");
+        } catch (IOException e) {
+            logger.error("Error while sending error response: ", e);
+        }
+
+        return "error";  // Returning a view named "error"
+    }
+
+    private void logSessionAttributes(HttpSession session) {
         logger.info("Session ID: {}", session.getId());
         Enumeration<String> attributeNames = session.getAttributeNames();
         while (attributeNames.hasMoreElements()) {

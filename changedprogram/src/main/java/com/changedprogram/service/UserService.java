@@ -75,31 +75,11 @@ public class UserService {
     }
 
     public void prepareFormModel(Model model) {
-        model.addAttribute("positions", positionRepository.findAll());
-        model.addAttribute("receivers", receiverRepository.findAll());
-        model.addAttribute("companies", companyRepository.findAll());
+        model.addAttribute("positions", positionRepository.findAllPositionDTOsSortedByName());
+        model.addAttribute("receivers", receiverRepository.findAllReceiverDTOsSortedByName());
+        model.addAttribute("companies", companyRepository.findAllCompanyDTOsSortedByName());
     }
 
-    
-    public void validateUserForm(UserFormModel userForm, BindingResult result) {
-        // Custom validation for the birthdate
-        try {
-            userForm.validateBirthdate();
-        } catch (Exception e) {
-            result.rejectValue("birthdate", "error.adduser.birthdate", e.getMessage());
-        }
-
-        // Custom validation for the tax number
-        if (!result.hasFieldErrors("taxNumber")) {
-            try {
-                if (!userForm.isValidTaxNumber()) {
-                    throw new IllegalArgumentException(userForm.getMessage("error.adduser.taxNumber"));
-                }
-            } catch (IllegalArgumentException e) {
-                result.rejectValue("taxNumber", "error.adduser.taxNumber", e.getMessage());
-            }
-        }
-    }
     
     
     public List<Ppt> getActivePresentationsByLanguage(String languageCode) {

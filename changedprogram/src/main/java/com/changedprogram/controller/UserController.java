@@ -7,9 +7,11 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.servlet.LocaleResolver;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.changedprogram.entity.Ppt;
 import com.changedprogram.entity.UserFormModel;
@@ -29,15 +32,17 @@ import jakarta.validation.Valid;
 
 @Controller
 public class UserController {
-	
+    
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
-	
     @Autowired
     private UserService userService;
 
     @Autowired
     private LocaleResolver localeResolver;
+    
+    @Autowired
+    private MessageSource messageSource;
 
     @ModelAttribute("userForm")
     public UserFormModel userFormModel() {
@@ -63,7 +68,7 @@ public class UserController {
         }
 
         if (sessionLanguage == null) {
-            sessionLanguage = "hu"; // Default to English if no language is set
+            sessionLanguage = "hu"; // Default to Hungarian if no language is set
             session.setAttribute("sessionLanguage", sessionLanguage);
             logger.debug("No session language set. Defaulting to: {}", sessionLanguage);
         }
@@ -75,80 +80,103 @@ public class UserController {
         logger.info("Displaying add user form. Language: {}, User ID: {}", sessionLanguage, userId != null ? userId : "none");
 
         userService.prepareFormModel(model);
-        logSessionAttributes(session); // Log session attributes
+        logSessionAttributes(session);
         return "addUser";
     }
-    
+
     @PostMapping("/add")
     public String processUserForm(
         @Valid @ModelAttribute("userForm") UserFormModel userForm,
         BindingResult result,
         Model model,
-        HttpSession session
+        HttpSession session,
+        RedirectAttributes redirectAttributes,
+        Locale locale
     ) {
         logger.debug("Entering processForm method with userForm: {}", userForm);
-
-        // Delegate validation to the service
-        userService.validateUserForm(userForm, result);
 
         if (result.hasErrors()) {
             logger.debug("Validation errors found: {}", result.getAllErrors());
             userService.prepareFormModel(model);
-            logSessionAttributes(session); // Log session attributes
+            logSessionAttributes(session);
             return "addUser";
         }
 
-        Long userId = userService.registerOrUpdateUser(userForm);
-        session.setAttribute("userId", userId);
-        model.addAttribute("userId", userId);
+        try {
+            Long userId = userService.registerOrUpdateUser(userForm);
+            session.setAttribute("userId", userId);
+            redirectAttributes.addFlashAttribute("userId", userId);
+            redirectAttributes.addFlashAttribute("successMessage", messageSource.getMessage("success.user.registered", null, locale));
 
-        String language = (String) session.getAttribute("sessionLanguage");
-        logger.info("User saved with ID: {}. Current Language: {}", userId, language != null ? language : "none");
-        logSessionAttributes(session); // Log session attributes
-        return "redirect:/options";
+            String language = (String) session.getAttribute("sessionLanguage");
+            logger.info("User saved with ID: {}. Current Language: {}", userId, language != null ? language : "none");
+            logSessionAttributes(session);
+            return "redirect:/options";
+        } catch (Exception e) {
+            logger.error("Error occurred during user registration: ", e);
+            redirectAttributes.addFlashAttribute("errorMessage", messageSource.getMessage("error.unexpected", null, locale));
+            return "redirect:/add";
+        }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public String handleException(HttpServletRequest request, Exception ex, Model model) {
+        logger.error("Request: " + request.getRequestURL() + " raised " + ex);
+
+        model.addAttribute("errorMessage", messageSource.getMessage("error.unexpected", null, request.getLocale()));
+        return "error";
     }
     
     @GetMapping("/options")
     public String showAvailablePresentations(Model model, HttpSession session) {
-        String language = (String) session.getAttribute("sessionLanguage");
-        Long userId = (Long) session.getAttribute("userId");
+        try {
+            String language = (String) session.getAttribute("sessionLanguage");
+            Long userId = (Long) session.getAttribute("userId");
 
-        logger.info("Displaying options for user ID: {}, Language: {}", userId != null ? userId : "none", language);
+            logger.info("Displaying options for user ID: {}, Language: {}", userId != null ? userId : "none", language);
 
-        if (language == null) {
-            language = "hu"; // Default to English if no language is set
-            session.setAttribute("sessionLanguage", language);
+            if (language == null) {
+                language = "hu"; // Default to Hungarian if no language is set
+                session.setAttribute("sessionLanguage", language);
+            }
+
+            List<Ppt> activePresentations = userService.getActivePresentationsByLanguage(language);
+            logger.debug("Active presentations found: {}", activePresentations.size());
+            if (activePresentations.isEmpty()) {
+                model.addAttribute("message", messageSource.getMessage("options.message.noTraining", null, localeResolver.resolveLocale(null)));
+            } else {
+                model.addAttribute("presentations", activePresentations);
+            }
+            logSessionAttributes(session);
+            return "options";
+        } catch (Exception e) {
+            logger.error("Error occurred while showing available presentations: ", e);
+            model.addAttribute("errorMessage", messageSource.getMessage("error.unexpected", null, localeResolver.resolveLocale(null)));
+            return "error";
         }
-
-        
-        List<Ppt> activePresentations = userService.getActivePresentationsByLanguage(language);
-        logger.debug("Active presentations found: {}", activePresentations.size());
-        if (activePresentations.isEmpty()) {
-            model.addAttribute("message", "No available presentations at the moment.");
-        } else {
-            model.addAttribute("presentations", activePresentations);
-        }
-        logSessionAttributes(session); // Log session attributes
-        return "options";
     }
-    
+
     @PostMapping("/presentation")
     public String showPresentation(@RequestParam("pptId") Long pptId, Model model, HttpSession session) {
-        Long userId = (Long) session.getAttribute("userId");
-        String language = (String) session.getAttribute("sessionLanguage");
+        try {
+            Long userId = (Long) session.getAttribute("userId");
+            String language = (String) session.getAttribute("sessionLanguage");
 
-        // Log user ID, pptId, and language
-        logger.info("Displaying presentation for user ID: {}", userId != null ? userId : "none");
-        logger.debug("Presentation ID (pptId): {}", pptId);
-        logger.debug("Session Language: {}", language != null ? language : "none");
+            logger.info("Displaying presentation for user ID: {}", userId != null ? userId : "none");
+            logger.debug("Presentation ID (pptId): {}", pptId);
+            logger.debug("Session Language: {}", language != null ? language : "none");
 
-        // Store pptId in session
-        session.setAttribute("pptId", pptId);
-        logSessionAttributes(session); // Log session attributes
-        return userService.preparePresentation(pptId, model, session);
+            session.setAttribute("pptId", pptId);
+            logSessionAttributes(session);
+            return userService.preparePresentation(pptId, model, session);
+        } catch (Exception e) {
+            logger.error("Error occurred while preparing presentation: ", e);
+            model.addAttribute("errorMessage", messageSource.getMessage("error.unexpected", null, localeResolver.resolveLocale(null)));
+            return "error";
+        }
     }
 
-    public void logSessionAttributes(HttpSession session) {
+    private void logSessionAttributes(HttpSession session) {
         logger.info("Session ID: {}", session.getId());
         Enumeration<String> attributeNames = session.getAttributeNames();
         while (attributeNames.hasMoreElements()) {

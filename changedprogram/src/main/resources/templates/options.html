@@ -12,14 +12,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: 'Source Sans Pro', sans-serif;
         }
 
         .container {
             text-align: center;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             padding: 2rem;
             border-radius: 8px;
             background: #e6ffe6; /* Very light green background */
+            max-width: 600px;
+            width: 100%;
         }
 
         h1 {
@@ -27,13 +30,15 @@
             margin-bottom: 1.5rem;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
         }
 
-        li {
-            margin-bottom: 1rem;
+        .card-body {
+            padding: 1.5rem;
         }
 
         .btn-primary {
@@ -41,6 +46,7 @@
             padding: 0.5rem 1.5rem;
             background-color: #007bff;
             border-color: #007bff;
+            border-radius: 5px;
         }
 
         .btn-primary:hover {
@@ -50,16 +56,26 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container mt-5">
+        <!-- Display success message if any -->
+        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+        
+        <!-- Display error message if any -->
+        <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+        
         <h1 th:text="#{options.availableTraining}">Available Training:</h1>
         <div th:if="${presentations != null}">
-            <ul>
+            <ul class="list-unstyled">
                 <li th:each="ppt : ${presentations}">
-                    <p th:text="${ppt.filename}">Training Name</p>
-                    <form th:action="@{/presentation}" method="post">
-                        <input type="hidden" name="pptId" th:value="${ppt.id}" />
-                        <button type="submit" class="btn btn-primary" th:text="#{options.button.start}">Start</button>
-                    </form>
+                    <div class="card">
+                        <div class="card-body">
+                            <p class="card-title h5" th:text="${ppt.filename}">Training Name</p>
+                            <form th:action="@{/presentation}" method="post">
+                                <input type="hidden" name="pptId" th:value="${ppt.id}" />
+                                <button type="submit" class="btn btn-primary" th:text="#{options.button.start}">Start</button>
+                            </form>
+                        </div>
+                    </div>
                 </li>
             </ul>
         </div>

@@ -2,65 +2,164 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title th:text="#{welcome.title}">EHS oktatás</title>
+    <title th:text="#{welcome.title}">Educationer</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.4.6/css/flag-icon.min.css">
+    <link rel="icon" href="/images/Educationerr.png" type="image/png">
     <style>
         html, body {
             height: 100%;
             margin: 0;
-            background-color: #ccffcc;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .background-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
+            z-index: -1;
+            opacity: 0.8; /* Adjust opacity as needed */
+        }
+        .content-wrapper {
+            position: relative;
+            z-index: 2;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Arial', sans-serif;
+            flex-direction: column; /* Ensure the content is centered properly */
+            width: 100%;
+            height: 100%;
+            padding: 20px; /* Adjust padding for better spacing */
         }
         .container {
+            background-color: rgba(255, 255, 255, 0.8); /* Slightly more opaque for better contrast */
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            max-width: 600px; /* Limit the width for better readability */
             text-align: center;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         h1 {
             font-size: 2.5rem;
-            color: #333;
+            color: #004085;
+            margin-bottom: 20px;
         }
         .btn-primary {
             font-size: 1.2rem;
             padding: 10px 20px;
             background-color: #004085;
             border-color: #004085;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .btn-primary:hover {
             background-color: #0056b3;
             border-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
         .language-switcher {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
         }
-        .language-switcher a {
-            margin-left: 5px;
+        @media (max-width: 768px) {
+            .language-switcher {
+                right: 20px;
+                top: 10px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .btn-primary {
+                font-size: 1rem;
+                padding: 8px 16px;
+            }
+            .container {
+                padding: 30px;
+                max-width: 90%; /* Adjust for smaller screens */
+            }
+        }
+        .dropdown-toggle {
+            background-color: #004085;
+            color: #fff;
+            border-color: #004085;
+            padding: 5px 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+        }
+        .dropdown-toggle:hover, .dropdown-toggle:focus {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .dropdown-menu {
+            background-color: #f0f8ff; /* Matching light background */
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .dropdown-item {
+            color: #004085;
+        }
+        .dropdown-item:hover, .dropdown-item:focus {
+            background-color: #e6f2ff;
+            color: #004085;
+        }
+        footer {
+            position: absolute;
+            bottom: 20px;
+            text-align: center;
+            width: 100%;
+            color: #004085;
+            z-index: 2;
+        }
+        .flag-icon {
+            width: 20px;
+            height: auto;
+            margin-right: 8px;
         }
     </style>
 </head>
 <body>
-<div class="language-switcher">
-    <form th:action="@{/change-language}" method="post">
-        <input type="hidden" name="lang" value="hu"/>
-        <button type="submit" class="btn btn-secondary">HU</button>
-    </form>
-    <form th:action="@{/change-language}" method="post">
-        <input type="hidden" name="lang" value="en"/>
-        <button type="submit" class="btn btn-secondary">EN</button>
-    </form>
-</div>
-
-    <div class="container">
-        <h1 th:text="#{welcome.title}">EHS oktatás</h1>
-        <form action="/add" method="get">
-            <button type="submit" class="btn btn-primary" th:text="#{welcome.filldata}">Adatok kitöltése</button>
-        </form>
+    <div class="background-wrapper"></div>
+    <div class="language-switcher dropdown">
+        <button class="btn dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <span th:text="#{welcome.language.current}"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+            <li>
+                <form th:action="@{/change-language}" method="post">
+                    <input type="hidden" name="lang" value="hu"/>
+                    <button type="submit" class="dropdown-item">
+                        <span class="flag-icon flag-icon-hu"></span> <span th:text="#{welcome.language.hungarian}">Magyar</span>
+                    </button>
+                </form>
+            </li>
+            <li>
+                <form th:action="@{/change-language}" method="post">
+                    <input type="hidden" name="lang" value="en"/>
+                    <button type="submit" class="dropdown-item">
+                        <span class="flag-icon flag-icon-gb"></span> <span th:text="#{welcome.language.english}">Angol</span>
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+    <div class="content-wrapper">
+        <div class="container text-center">
+            <h1 th:text="#{welcome.title}">Educationer</h1>
+            <form action="/add" method="get">
+                <button type="submit" class="btn btn-primary" th:text="#{welcome.filldata}">Adatok megadása</button>
+            </form>
+        </div>
+        <footer>
+            <p>&copy; 2024 Educationer. All rights reserved.</p>
+        </footer>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
