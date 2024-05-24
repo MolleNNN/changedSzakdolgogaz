@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css">
     <style>
-        /* Your existing styles */
         html, body {
             height: 100%;
             margin: 0;
@@ -54,7 +53,7 @@
 
         h1 {
             font-size: 2.5rem;
-            color: #007bff;
+            color: #004085;
         }
 
         .btn-primary {
@@ -124,6 +123,10 @@
                 flex: 0 0 100%;
             }
         }
+
+        .filled-field {
+            background-color: #e6f7ff;
+        }
     </style>
 </head>
 <body>
@@ -140,14 +143,14 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="name" class="form-label" th:text="#{adduser.name}">Név:</label>
-                            <input type="text" id="name" th:field="*{name}" th:placeholder="#{adduser.name.placeholder}" class="form-control" required>
+                            <input type="text" id="name" th:field="*{name}" th:placeholder="#{adduser.name.placeholder}" class="form-control filled-field" required>
                             <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="error-message"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="birthdate" class="form-label" th:text="#{adduser.birthdate}">Születési idő:</label>
-                            <input type="text" id="birthdate" th:field="*{birthdate}" class="form-control" th:placeholder="#{adduser.birthdate.format}" required readonly>
+                            <input type="text" id="birthdate" th:field="*{birthdate}" class="form-control filled-field" th:placeholder="#{adduser.birthdate.format}" required readonly>
                             <div th:if="${#fields.hasErrors('birthdate')}" th:errors="*{birthdate}" class="error-message"></div>
                         </div>
                     </div>
@@ -155,7 +158,7 @@
                 <div class="tax-number-group">
                     <div class="form-group">
                         <label for="taxNumber" class="form-label" th:text="#{adduser.taxNumber}">Adószám:</label>
-                        <input type="text" id="taxNumber" th:field="*{taxNumber}" th:placeholder="#{adduser.taxNumber.placeholder}" class="form-control" maxlength="10" pattern="\d{10}" required>
+                        <input type="text" id="taxNumber" th:field="*{taxNumber}" th:placeholder="#{adduser.taxNumber.placeholder}" class="form-control filled-field" maxlength="10" pattern="\d{10}" required>
                         <div th:if="${#fields.hasErrors('taxNumber')}" th:errors="*{taxNumber}" class="error-message"></div>
                     </div>
                 </div>
@@ -163,14 +166,14 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="email" class="form-label" th:text="#{adduser.email}">Email:</label>
-                            <input type="email" id="email" th:field="*{email}" th:placeholder="#{adduser.email.placeholder}" class="form-control" required>
+                            <input type="email" id="email" th:field="*{email}" th:placeholder="#{adduser.email.placeholder}" class="form-control filled-field" required>
                             <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="error-message"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label for="phoneNumber" class="form-label" th:text="#{adduser.phoneNumber}">Telefonszám:</label>
-                            <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" th:attr="placeholder='+36123456789'" class="form-control" required>
+                            <input type="tel" id="phoneNumber" th:field="*{phoneNumber}" th:attr="placeholder='+36123456789'" class="form-control filled-field" required>
                             <div th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}" class="error-message"></div>
                         </div>
                     </div>
@@ -179,7 +182,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="position" class="form-label" th:text="#{adduser.position}">Pozíció:</label>
-                            <select id="position" th:field="*{positionId}" class="form-select" required>
+                            <select id="position" th:field="*{positionId}" class="form-select filled-field" required>
                                 <option value="" selected th:text="#{adduser.selectPosition}">Válaszd ki a pozíciót</option>
                                 <option th:each="position : ${positions}" th:value="${position.id}" th:text="${position.name}"></option>
                             </select>
@@ -189,7 +192,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="receiverId" class="form-label" th:text="#{adduser.receiver}">Fogadó fél:</label>
-                            <select id="receiverId" th:field="*{receiverId}" class="form-select" required>
+                            <select id="receiverId" th:field="*{receiverId}" class="form-select filled-field" required>
                                 <option value="" selected th:text="#{adduser.selectReceiver}">Válaszd ki a fogadó felet</option>
                                 <option th:each="receiver : ${receivers}" th:value="${receiver.id}" th:text="${receiver.name}"></option>
                             </select>
@@ -199,7 +202,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label for="companyId" class="form-label" th:text="#{adduser.company}">Cég:</label>
-                            <select id="companyId" th:field="*{companyId}" class="form-select" required>
+                            <select id="companyId" th:field="*{companyId}" class="form-select filled-field" required>
                                 <option value="" selected th:text="#{adduser.selectCompany}">Válaszd ki a céget</option>
                                 <option th:each="company : ${companies}" th:value="${company.id}" th:text="${company.name}"></option>
                             </select>
@@ -207,7 +210,7 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary mt-3" th:text="#{adduser.submit}">Elküld</button>
+                <button type="submit" class="btn btn-primary mt-3" th:text="#{adduser.submit}" disabled>Elküld</button>
             </form>
         </div>
     </div>
@@ -256,6 +259,33 @@
             if (initialDateValue) {
                 birthdateInput.val(convertDateFormat(initialDateValue));
             }
+
+            function checkFields() {
+                let isValid = true;
+                $('#userForm').find('input, select').each(function() {
+                    if (!this.checkValidity()) {
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+
+            function updateFieldState() {
+                $('#userForm').find('input, select').each(function() {
+                    if (this.value) {
+                        $(this).addClass('filled-field');
+                    } else {
+                        $(this).removeClass('filled-field');
+                    }
+                });
+                $('.btn-primary').prop('disabled', !checkFields());
+            }
+
+            $('#userForm').find('input, select').on('input change', function() {
+                updateFieldState();
+            });
+
+            updateFieldState();
         });
     </script>
 </body>

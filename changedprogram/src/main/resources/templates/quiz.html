@@ -3,66 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="#{quiz.title}">Quiz Page</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
-        body {
-            background-color: #ccffcc; /* Light green background */
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .background-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .question-card {
-            max-width: 600px; /* Fixed width */
-            margin: auto; /* Center the card horizontally */
-            padding: 20px; /* Padding inside the card */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-            background: white; /* White background for the card */
-            border-radius: 8px; /* Rounded corners for the card */
+            width: 600px;
+            max-width: 90%;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .question-container {
             display: flex;
-            height: 100vh; /* Full viewport height */
-            align-items: center; /* Center vertically */
-            justify-content: center; /* Center horizontally */
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 20px;
+        }
+        .btn-primary {
+            font-size: 1rem;
+            padding: 8px 16px;
+            background-color: #004085;
+            border-color: #004085;
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 20px auto;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        .btn-answer {
+            font-size: 1rem;
+            padding: 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+            transition: background-color 0.3s, border-color 0.3s;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .btn-answer:hover {
+            background-color: #e9ecef;
+            border-color: #004085;
+        }
+        .btn-answer.active {
+            background-color: #e9ecef;
+            border-color: #004085;
+        }
+        .progress {
+            height: 20px;
+            margin-bottom: 5px;
+        }
+        .progress-bar {
+            background-color: #004085;
+        }
+        #questionCounter {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .question-card {
+                width: 90%;
+                padding: 15px;
+            }
+            .question-text {
+                font-size: 1.25rem;
+            }
+            .btn-answer {
+                width: 100%;
+                padding: 10px;
+                font-size: 1rem;
+            }
+            .btn-primary {
+                width: 100%;
+                padding: 10px;
+            }
+        }
+        @media (max-width: 480px) {
+            .question-card {
+                width: 100%;
+                padding: 10px;
+                border-radius: 10px;
+            }
+            .question-text {
+                font-size: 1rem;
+            }
+            .btn-answer {
+                width: 100%;
+                padding: 8px;
+                font-size: 0.875rem;
+            }
+            .btn-primary {
+                width: 100%;
+                padding: 8px;
+                font-size: 0.875rem;
+            }
         }
     </style>
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
-    <div class="question-container">
-        <div class="question-card">
-            <p id="questionCounter">
-                <span th:text="#{quiz.questionCounter}">Question</span> 
-                <span id="currentQuestionNumber">[[${currentQuestionIndex}]]</span> 
-                <span th:text="#{quiz.of}">of</span> 
-                [[${totalQuestions}]]
-            </p>
-            <p id="questionText">[[${question.text}]]</p>
-            <form id="answerForm" th:action="@{/nextQuestion}" method="post">
-                <!-- CSRF Token -->
-                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="answer" value="true" id="trueOption" required>
-                    <label class="form-check-label" for="trueOption" th:text="#{quiz.trueOption}">True</label>
+    <div class="background-container">
+        <div class="question-container">
+            <div class="question-card">
+                <div style="width: 100%;">
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar"
+                             th:style="|width: ${progressPercentage}%;|"
+                             aria-valuenow="[[${currentQuestionIndex}]]"
+                             aria-valuemin="0" aria-valuemax="[[${totalQuestions}]]">
+                        </div>
+                    </div>
+                    <p id="questionCounter" class="mb-4">
+                        <span id="currentQuestionNumber">[[${currentQuestionIndex}]]</span> 
+                        <span th:text="#{quiz.of}">of</span> 
+                        [[${totalQuestions}]]
+                    </p>
+                    <p id="questionText" class="question-text">[[${question.text}]]</p>
                 </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="answer" value="false" id="falseOption">
-                    <label class="form-check-label" for="falseOption" th:text="#{quiz.falseOption}">False</label>
-                </div>
-                <button type="submit" class="btn btn-primary mt-3" th:text="#{quiz.submit}">Submit</button>
-            </form>
+                <form id="answerForm" th:action="@{/nextQuestion}" method="post" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <!-- CSRF Token -->
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="answer" id="answerInput" required>
+                    <div style="width: 100%; display: flex; justify-content: space-around;">
+                        <button type="button" class="btn-answer" data-value="true" onclick="selectAnswer(true)">Igaz</button>
+                        <button type="button" class="btn-answer" data-value="false" onclick="selectAnswer(false)">Hamis</button>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3" disabled>Beküldés</button>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- jQuery and Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        const messages = {
-            processError: /*[[#{quiz.processError}]]*/ 'Error processing the quiz.',
-            fetchError: /*[[#{quiz.error}]]*/ 'Error fetching the next question.'
-        };
+        function selectAnswer(value) {
+            document.getElementById('answerInput').value = value;
+            const buttons = document.querySelectorAll('.btn-answer');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelector(`.btn-answer[data-value="${value}"]`).classList.add('active');
+            document.querySelector('button[type="submit"]').disabled = false;
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('answerForm');
+            const submitButton = form.querySelector('button[type="submit"]');
 
             // Retrieve CSRF token and header name from the meta tags
             const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -88,7 +209,7 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log(data); // Log the response data to see the structure and values
+                    console.log('Response data:', data); // Log the response data to see the structure and values
 
                     // Update the page with new question details
                     if (data.completed) {
@@ -110,11 +231,22 @@
                         });
                     } else {
                         document.getElementById('questionText').innerText = data.questionText;
-                        document.getElementById('currentQuestionNumber').innerText = data.currentQuestionIndex + 1;  // Correctly update the question number
+                        document.getElementById('currentQuestionNumber').innerText = data.currentQuestionIndex;  // Use the index sent by the server
 
-                        // Reset radio buttons for the next question
-                        document.querySelector('input[name="answer"][value="true"]').checked = false;
-                        document.querySelector('input[name="answer"][value="false"]').checked = false;
+                        // Update progress bar
+                        const progressBar = document.querySelector('.progress-bar');
+                        const progressPercentage = data.progressPercentage; // Use the calculated percentage
+                        progressBar.style.width = progressPercentage + '%';
+                        progressBar.setAttribute('aria-valuenow', data.currentQuestionIndex);
+
+                        // Reset buttons for the next question
+                        document.getElementById('answerInput').value = '';
+                        document.querySelectorAll('.btn-answer').forEach(button => {
+                            button.classList.remove('active');
+                        });
+
+                        // Disable submit button
+                        submitButton.disabled = true;
                     }
                 })
                 .catch(error => {

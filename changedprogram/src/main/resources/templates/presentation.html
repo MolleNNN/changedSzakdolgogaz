@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${ppt.filename}">Active Presentation</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
     <style>
         body, html {
             width: 100%;
@@ -13,101 +15,281 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #ccffcc; /* Light green background */
+            background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
         }
-        #image-slider {
-            position: relative;
-            width: 800px; /* Adjust as needed */
-            height: 600px;
+        .main-container {
+            max-width: 90%;
+            max-height: 90%;
+            width: 70%;
+            height: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        #progress-bar {
+        .slick-slide img {
             width: 100%;
-            height: 5px;
-            background-color: #ddd;
+            height: auto;
+            border-radius: 15px; /* Round the corners of the image */
         }
-        #fill-bar {
-            width: 0%;
-            height: 100%;
-            background-color: green;
+        .navigation-container {
+            position: relative;
+            width: 100%;
         }
-        #counter {
+        .navigation-buttons {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.5);
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .prev, .next {
+            cursor: pointer;
+            width: auto;
+            padding: 16px;
             color: white;
-            padding: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: background-color 0.6s ease;
+            border-radius: 50%;
+            user-select: none;
+            z-index: 1000;
+        }
+        .prev:hover, .next:hover {
+            background-color: black;
+            color: white;
+        }
+        .disabled {
+            pointer-events: none;
+            opacity: 0.5;
         }
         #quiz-button {
+            display: none;
+            margin-top: 20px; /* Adjust distance below the slider */
+        }
+        #progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px; /* Adjust distance below the slider */
+        }
+        #progress-bar {
+            height: 100%;
+            background-color: blue;
+            width: 0%;
+        }
+        #countdown {
+            font-size: 24px;
+            font-weight: bold;
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: -50px; /* Adjust distance below the slider */
+            top: -5px; /* Adjust to place above the image */
+            right: 10px; /* Margin from the right edge */
+            margin: 0;
+            padding: 0;
+            z-index: 1000;
+            background: none;
+        }
+        .slider-container {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            max-width: 100%;
+        }
+        .slider-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 15px; /* Round the corners of the slider container */
+            overflow: hidden; /* Ensure the rounded corners are visible */
+            max-width: 100%;
+            border: 2px solid black; /* Add black border */   
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);   
+        }
+        .slider-wrapper img {
+            display: block;
+            margin: 0 auto;
+        }
+        /* W3Schools Button Styles */
+        .w3-button {
+            border: none;
+            display: inline-block;
+            padding: 8px 16px;
+            vertical-align: middle;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            background-color: inherit;
+            text-align: center;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .w3-button:hover {
+            color: white !important;
+            background-color: black !important;
+        }
+        .w3-disabled, .w3-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.3;
+        }
+        .w3-button.w3-left {
+            border-radius: 0 3px 3px 0;
+        }
+        .w3-button.w3-right {
+            border-radius: 3px 0 0 3px;
+        }
+        @media (max-width: 768px) {
+            .navigation-buttons {
+                bottom: 10px;
+            }
+            .prev, .next {
+                padding: 8px;
+                font-size: 14px;
+            }
+            #countdown {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="image-slider">
-        <img th:src="'data:image/png;base64,' + ${images[0]}" alt="Presentation Image" id="current-image" style="width: 100%; height: auto;"/>
-        <div id="progress-bar"><div id="fill-bar"></div></div>
-        <button onclick="navigate('prev')" id="prev-button" class="btn btn-secondary" style="display: none;">Previous</button>
-        <button onclick="navigate('next')" id="next-button" class="btn btn-primary" style="display: none;">Next</button>
-        <div id="counter">10</div>
+    <div class="main-container">
+        <div class="container">
+            <div class="slider-container">
+                <div id="countdown"></div>
+                <div class="slider-wrapper">
+                    <div class="slider">
+                        <div th:each="image : ${images}">
+                            <img th:src="'data:image/png;base64,' + ${image}" alt="Presentation Image"/>
+                        </div>
+                    </div>
+                </div>
+                <div id="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
+            </div>
+            <div class="navigation-container">
+                <div class="navigation-buttons">
+                    <a class="w3-button w3-left prev disabled">&#10094;</a>
+                    <a class="w3-button w3-right next disabled">&#10095;</a>
+                </div>
+            </div>
+            <a th:href="@{/quiz}" class="btn btn-success" id="quiz-button">Go to Quiz</a>
+        </div>
     </div>
-    <a th:href="@{/quiz}" class="btn btn-success" id="quiz-button" style="display: none; margin-top: 20px;">Go to Quiz</a>
-    
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
-        var currentImageIndex = 0;
-        var images = /*[[${images}]]*/ [];
-        var countdownTimer;
-        var timerDuration = 10;
-        var visited = Array(images.length).fill(false);
+        $(document).ready(function() {
+            console.log("Document ready");
+            var $slider = $('.slider');
+            var $progressBar = $('#progress-bar');
+            var $countdown = $('#countdown');
+            var $prevButton = $('.prev');
+            var $nextButton = $('.next');
+            var countdownInterval;
+            var countdownDuration = 5; // Countdown duration in seconds
+            var isBackNavigation = false; // Flag to track if the navigation is back
+            var presentationCompleted = false; // Flag to track if the presentation is completed
 
-        function updateSlider() {
-            document.getElementById('fill-bar').style.width = ((currentImageIndex + 1) / images.length * 100) + '%';
-        }
+            function startCountdown(callback) {
+                console.log("Starting countdown");
+                var countdown = countdownDuration;
+                $countdown.text(countdown);
+                $prevButton.addClass('disabled');
+                $nextButton.addClass('disabled');
 
-        function updateButtonVisibility() {
-            document.getElementById('prev-button').style.display = currentImageIndex > 0 ? 'block' : 'none';
-            document.getElementById('next-button').style.display = currentImageIndex < images.length - 1 ? 'block' : 'none';
-            document.getElementById('quiz-button').style.display = currentImageIndex === images.length - 1 ? 'block' : 'none';
-        }
-
-        function navigate(direction) {
-            if (direction === 'next' && currentImageIndex < images.length - 1) {
-                currentImageIndex++;
-                visited[currentImageIndex] = true; // Mark as visited when first time viewed
-            } else if (direction === 'prev' && currentImageIndex > 0) {
-                currentImageIndex--;
+                countdownInterval = setInterval(function() {
+                    console.log("Countdown: " + countdown);
+                    countdown--;
+                    $countdown.text(countdown);
+                    if (countdown <= 0) {
+                        clearInterval(countdownInterval);
+                        $countdown.text('');
+                        $prevButton.removeClass('disabled');
+                        $nextButton.removeClass('disabled');
+                        callback();
+                    }
+                }, 1000);
             }
-            document.getElementById('current-image').src = 'data:image/png;base64,' + images[currentImageIndex];
-            document.getElementById('next-button').style.display = 'none'; // Always hide next on navigate
-            document.getElementById('prev-button').style.display = 'none'; // Always hide previous on navigate
-            startTimer();
-            updateSlider();
-        }
 
-        function startTimer() {
-            var counterElement = document.getElementById('counter');
-            var timeLeft = timerDuration;
-            counterElement.innerText = timeLeft;
-            counterElement.style.display = 'block';
-            clearInterval(countdownTimer);
-            countdownTimer = setInterval(function() {
-                timeLeft--;
-                counterElement.innerText = timeLeft;
-                if (timeLeft <= 0) {
-                    clearInterval(countdownTimer);
-                    counterElement.style.display = 'none';
-                    updateButtonVisibility(); // Show buttons based on image position after countdown
+            function updateButtonVisibility(currentSlide, totalSlides) {
+                console.log("Updating button visibility: currentSlide=" + currentSlide + ", totalSlides=" + totalSlides);
+                $prevButton.toggleClass('disabled', currentSlide <= 0);
+                $nextButton.toggleClass('disabled', currentSlide >= totalSlides - 1);
+            }
+
+            function updateProgressBar(currentSlide, totalSlides) {
+                var progressPercentage = ((currentSlide + 1) / totalSlides) * 100;
+                console.log("Updating progress bar: " + progressPercentage + "%");
+                $progressBar.css('width', progressPercentage + '%');
+            }
+
+            $slider.slick({
+                slidesToShow: 1,
+                slidesToScroll: 1,
+                arrows: false,
+                adaptiveHeight: true,
+                swipe: false,
+                draggable: false
+            });
+
+            $slider.on('afterChange', function(event, slick, currentSlide) {
+                console.log("After change: currentSlide=" + currentSlide);
+                var totalSlides = slick.slideCount;
+                updateProgressBar(currentSlide, totalSlides);
+
+                if (currentSlide === totalSlides - 1) {
+                    presentationCompleted = true; // Mark presentation as completed when last slide is reached
+                    $('#quiz-button').show();
+                } else {
+                    $('#quiz-button').hide();
                 }
-            }, 1000);
-        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            updateSlider();
-            startTimer();  // Start the countdown when the page is loaded
+                if (!presentationCompleted && !isBackNavigation) {
+                    startCountdown(function() {
+                        updateButtonVisibility(currentSlide, totalSlides);
+                    });
+                } else {
+                    updateButtonVisibility(currentSlide, totalSlides);
+                    isBackNavigation = false; // Reset flag after handling back navigation
+                }
+            });
+
+            $slider.on('init', function(event, slick) {
+                console.log("Slider initialized");
+                var currentSlide = slick.currentSlide;
+                var totalSlides = slick.slideCount;
+                updateProgressBar(currentSlide, totalSlides);
+                startCountdown(function() {
+                    updateButtonVisibility(currentSlide, totalSlides);
+                });
+            });
+
+            $prevButton.on('click', function() {
+                console.log("Previous button clicked");
+                if (!$prevButton.hasClass('disabled')) {
+                    isBackNavigation = true; // Set flag to indicate back navigation
+                    $slider.slick('slickPrev');
+                }
+            });
+
+            $nextButton.on('click', function() {
+                console.log("Next button clicked");
+                if (!$nextButton.hasClass('disabled')) {
+                    isBackNavigation = false; // Set flag to indicate forward navigation
+                    $slider.slick('slickNext');
+                }
+            });
+
+            // Trigger slick initialization manually
+            $slider.slick('slickGoTo', 0);
         });
         /*]]>*/
     </script>

@@ -3,49 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="#{summarize.title}">Quiz Summary</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #ccffcc; /* Light green background */
+            background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
         }
         .summary-card {
-            max-width: 600px; /* Fixed width */
-            margin: auto; /* Center the card horizontally */
-            padding: 20px; /* Padding inside the card */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
-            background: white; /* White background for the card */
-            border-radius: 8px; /* Rounded corners for the card */
+            width: 100%;
+            max-width: 700px;
+            min-width: 300px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background-color: rgba(255, 255, 255, 0.8); /* Slightly more opaque for better contrast */
+            border-radius: 15px; /* Rounded corners */
             text-align: center;
         }
-        .summary-container {
-            display: flex;
-            height: 100vh; /* Full viewport height */
-            align-items: center; /* Center vertically */
-            justify-content: center; /* Center horizontally */
+        .summary-title {
+            color: #004085;
+            font-size: 2.5rem;
+            font-weight: bold;
+            word-wrap: break-word; /* Allow text to wrap to new line */
+            margin-bottom: 10px; /* Adjust spacing below title */
+        }
+        .score {
+            font-size: 1.5rem;
+            margin-bottom: 5px; /* Adjust spacing below score */
+        }
+        .correct-answers {
+            font-size: 1.25rem;
+            margin-bottom: 40px; /* Adjust spacing below correct answers */
+        }
+        .score .percentage {
+            font-weight: bold;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+        }
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+        }
+        .btn-warning:hover, .btn-success:hover {
+            opacity: 0.85;
+        }
+        .text-danger {
+            color: red;
+            margin-top: 35px; /* Adjust spacing above requirement text */
+        }
+        .text-success {
+            color: green;
+        }
+        @media (max-width: 768px) {
+            .summary-title {
+                font-size: 2rem;
+            }
+            .score {
+                font-size: 1.25rem;
+            }
+            .correct-answers {
+                font-size: 1.1rem;
+            }
+            .btn {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+        }
+        @media (max-width: 480px) {
+            .summary-card {
+                padding: 15px;
+            }
+            .summary-title {
+                font-size: 1.5rem;
+            }
+            .score {
+                font-size: 1rem;
+            }
+            .correct-answers {
+                font-size: 0.9rem;
+            }
+            .btn {
+                font-size: 0.8rem;
+                padding: 8px 16px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="summary-container">
         <div class="summary-card">
-            <h1 th:text="#{summarize.title}">Quiz Summary</h1>
-            <p>
-                <span th:text="#{summarize.yourScore}">Your Score:</span> 
-                <span th:text="${scorePercentage}">0</span>%
+            <h1 class="summary-title" th:text="#{summarize.title}">Összegzés</h1>
+            <p class="score">
+                <span th:text="#{summarize.yourScore}">Elért eredmény:</span> 
+                <span class="percentage" th:classappend="${scorePercentage >= 90} ? 'text-success' : 'text-danger'" th:text="${#numbers.formatDecimal(scorePercentage, 0, 0)}">0</span><strong th:classappend="${scorePercentage >= 90} ? 'text-success' : 'text-danger'">%</strong>
             </p>
-            <p>
-                <span th:text="#{summarize.correctAnswers}">Correct Answers:</span> 
+            <p class="correct-answers">
+                <span th:text="#{summarize.correctAnswers}">Helyes válaszok:</span> 
                 <span th:text="${correctAnswersCount}">0</span> 
-                <span th:text="#{summarize.outOf}">out of</span> 
+                <span th:text="#{summarize.outOf}">/</span> 
                 <span th:text="${totalQuestions}">0</span>
             </p>
             <div th:if="${scorePercentage < 90}">
-                <a th:href="@{/quiz}" class="btn btn-warning" th:text="#{summarize.retry}">Retry</a>
+                <a th:href="@{/quiz}" class="btn btn-warning" th:text="#{summarize.retry}">Újra</a>
             </div>
             <div th:if="${scorePercentage >= 90}">
-                <a th:href="@{/signature}" class="btn btn-success" th:text="#{summarize.moveToSignature}">Move to Signature</a>
+                <a th:href="@{/signature}" class="btn btn-success" th:text="#{summarize.moveToSignature}">Tovább az aláíráshoz</a>
             </div>
+            <p th:if="${scorePercentage < 90}" class="text-danger">
+                <span th:text="#{summarize.requirement}">90% elérése szükséges</span>
+            </p>
         </div>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
