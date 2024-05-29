@@ -26,11 +26,17 @@ public class AdminCompanyService {
 
     @Autowired
     private Validator validator;
-
+/*
     public List<CompanyDTO> findAllCompanies() {
         return companyRepository.findAll().stream()
                 .map(company -> new CompanyDTO(company.getId(), company.getName()))
+              
                 .collect(Collectors.toList());
+    }
+*/
+    public List<CompanyDTO> findAllCompanies() {
+        // Use the sorted query to fetch companies in alphabetical order
+        return companyRepository.findAllCompanyDTOsSortedByName();
     }
 
     public Company addCompany(Company company) throws ConstraintViolationException {
@@ -99,11 +105,8 @@ public class AdminCompanyService {
         if (name.length() < 2 || name.length() > 255) {
             throw new IllegalArgumentException("Company name must be between 2 and 255 characters.");
         }
-
-        Pattern pattern = Pattern.compile("^[A-Za-zÀ-ÿ-.\\s]+$");
-        if (!pattern.matcher(name.trim()).matches()) {
-            throw new IllegalArgumentException("The name can only contain letters, hyphens, dots, and accented characters.");
-        }
+        
+        // Removed pattern matching to allow any character
     }
 
     private String formatCompanyName(String name) {

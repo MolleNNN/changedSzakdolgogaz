@@ -3,6 +3,8 @@ package com.changedprogram.entity;
 import java.util.Base64;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,10 +28,12 @@ public class Result {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ppt_id")
+    @JsonBackReference
     private Ppt ppt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user; // Link to the user who completed the quiz
     
     @Column(name = "valid")

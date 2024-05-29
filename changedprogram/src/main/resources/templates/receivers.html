@@ -3,181 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <title>Receivers</title>
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" th:href="@{/css/styles.css}" />
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script th:src="@{/js/scripts.js}"></script>
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/nav.css}"> <!-- Link to custom CSS -->
+    <style>
+        .card-custom {
+            height: 100%;
+        }
+        .dataTables_wrapper {
+            width: 100%;
+            overflow-x: hidden;
+        }
+        table.dataTable thead .hide-column {
+            display: none;
+        }
+        table.dataTable tbody .hide-column {
+            display: none;
+        }
+        .table-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+        }
+        .black-border {
+            border-top: 0.5px solid black !important;
+            border-bottom: 0.5px solid black !important;
+            border-left: none !important;
+            border-right: none !important;
+        }
+        .table-header-grey th {
+            background-color: #d3d3d3 !important; /* Darker grey background */
+            color: #333 !important; /* Dark grey text */
+        }
+
+    </style>
 </head>
 <body>
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light navbar-custom">
-    <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/data}">Adatok</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/ppt}">Oktatás</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/dataupload}">Adat feltöltés</a>
-            </li>
-            <!-- New Fields -->
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/datas}">Datas</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" th:href="@{/admin/results}">Results</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
+   <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/datas}">Adatok</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/results}">Eredmények</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/statistics}">Statisztika</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/ppt}">Oktatások</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/dataupload}">Adatok feltöltése</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 <div class="container mt-5">
     <div id="notification-container"></div>
 
-    <h2>Receivers</h2>
-    <table id="receiversTable" class="display">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="receiver : ${receivers}">
-            <td th:text="${receiver.id}">1</td>
-            <td th:text="${receiver.name}">Receiver Name</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <h2>Add New Receiver</h2>
-    <form id="addReceiverForm" th:action="@{/admin/receivers}" th:object="${newReceiver}" method="post" class="form-inline">
-        <div class="form-group mr-2">
-            <label for="name" class="mr-2">Receiver Name:</label>
-            <input type="text" id="name" name="name" th:value="*{name}" required minlength="2" maxlength="255" class="form-control" />
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-3 card-custom">
+                <div class="card-header text-center">
+                    <h2>Fogadó fél hozzáadása</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col text-center">
+                            <button id="showAddReceiver" class="btn btn-success mb-2">Hozzáad</button>
+                        </div>
+                    </div>
+                    <div id="addReceiverContainer" style="display: none;">
+                        <form id="addReceiverForm" th:action="@{/admin/receivers}" th:object="${newReceiver}" method="post" class="form-inline">
+                            <div class="form-group mr-2">
+                                <label for="name" class="mr-2">Fogadó fél neve:</label>
+                                <input type="text" id="name" name="name" th:value="*{name}" required minlength="2" maxlength="255" class="form-control" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col text-center">
+                                    <button type="submit" class="btn btn-success mt-2">Hozzáad</button>
+                                    <button type="button" id="cancelAddReceiver" class="btn btn-secondary mt-2">Vissza</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-success">Add Receiver</button>
-    </form>
 
-    <h2>Modify Receiver</h2>
-    <button id="showModifyReceiver" class="btn btn-primary mb-2">Modify Receiver</button>
-    <div id="modifyReceiverContainer" style="display: none;">
-        <form id="modifyReceiverForm" th:action="@{/admin/updateReceiver}" method="post">
-            <div class="form-group">
-                <label for="modifyReceiverSelect">Select Receiver:</label>
-                <select id="modifyReceiverSelect" name="receiverId" class="form-control" required>
-                    <option value="" disabled selected>Select a receiver</option>
-                </select>
+        <div class="col-md-4">
+            <div class="card mb-3 card-custom">
+                <div class="card-header text-center">
+                    <h2>Fogadó fél módosítása</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col text-center">
+                            <button id="showModifyReceiver" class="btn btn-primary mb-2">Módosít</button>
+                            <button id="cancelModifyReceiver" class="btn btn-secondary mb-2" style="display: none;">Vissza</button>
+                        </div>
+                    </div>
+                    <div id="modifyReceiverContainer" style="display: none;">
+                        <form id="modifyReceiverForm" th:action="@{/admin/updateReceiver}" method="post">
+                            <div class="form-group">
+                                <label for="modifyReceiverSelect">Fogadó fél kiválasztása:</label>
+                                <select id="modifyReceiverSelect" name="receiverId" class="form-control" required>
+                                    <option value="" disabled selected>Fogadó fél kiválasztása</option>
+                                </select>
+                            </div>
+                            <div class="form-group mt-3" id="newReceiverGroup" style="display: none;">
+                                <label for="newReceiverName">A fogadó fél új neve:</label>
+                                <input type="text" id="newReceiverName" name="name" class="form-control" required minlength="2" maxlength="255" />
+                            </div>
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <div class="row mt-2" id="inlineButtons" style="display: none;">
+                                <div class="col text-center">
+                                    <button type="submit" id="saveReceiverButton" class="btn btn-success mt-2">Mentés</button>
+                                    <button type="button" id="cancelModifyReceiverInline" class="btn btn-secondary mt-2">Vissza</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-            <div class="form-group" id="newReceiverGroup" style="display: none;">
-                <label for="newReceiverName">New Receiver Name:</label>
-                <input type="text" id="newReceiverName" name="name" class="form-control" required minlength="2" maxlength="255" />
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3 card-custom">
+                <div class="card-header text-center">
+                    <h2>Fogadó fél törlése</h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col text-center">
+                            <button id="showDeletableReceivers" class="btn btn-danger mb-2">Törölhető fogadó felek</button>
+                            <button id="cancelShowDeletableReceivers" class="btn btn-secondary mb-2" style="display: none;">Vissza</button>
+                        </div>
+                    </div>
+                    <form id="deleteReceiverForm" th:action="@{/admin/deleteReceiver}" method="post">
+                        <div id="deletableReceiverContainer" style="display: none;">
+                            <div class="form-group">
+                                <label for="deletableReceiverSelect">Fogadó fél kiválasztása:</label>
+                                <select id="deletableReceiverSelect" name="receiverId" class="form-control" required>
+                                    <option value="" disabled selected>Fogadó fél kiválasztása</option>
+                                </select>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col text-center">
+                                    <button type="submit" id="deleteReceiverButton" class="btn btn-danger mt-2" style="display: none;">Törlés</button>
+                                    <button type="button" id="cancelDeleteButton" class="btn btn-secondary mt-2" style="display: none;">Vissza</button>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" name="_csrf" value="${_csrf.token}">
+                    </form>
+                </div>
             </div>
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-            <button type="submit" id="saveReceiverButton" class="btn btn-success" style="display: none;">Save</button>
-            <button type="button" id="cancelModifyButton" class="btn btn-secondary" style="display: none;">Cancel</button>
-        </form>
+        </div>
     </div>
 
-    <h2>Delete Receiver</h2>
-    <button id="showDeletableReceivers" class="btn btn-danger mb-2">Show Deletable Receivers</button>
-    <form id="deleteReceiverForm" th:action="@{/admin/deleteReceiver}" method="post">
-        <div id="deletableReceiverContainer" style="display: none;">
-            <div class="form-group">
-                <select id="deletableReceiverSelect" name="receiverId" class="form-control" required>
-                    <option value="" disabled selected>Select a receiver</option>
-                </select>
+       <div class="row mt-5">
+            <div class="col-12">
+                <div class="card mb-3 card-custom">
+                    <div class="card-header text-center">
+                        <h2>Fogadó fél lista</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="receiversTable" class="display no-hover no-stripe table">
+                                <thead class="table-header-grey">
+                                    <tr>
+                                        <th class="hide-column">ID</th>
+                                        <th>Név</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="receiver : ${receivers}">
+                                        <td th:text="${receiver.id}" class="hide-column">1</td>
+                                        <td th:text="${receiver.name}">Fogadó fél neve</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="submit" id="deleteReceiverButton" class="btn btn-danger" style="display: none;">Delete</button>
-            <button type="button" id="cancelDeleteButton" class="btn btn-secondary" style="display: none;">Cancel</button>
         </div>
-        <input type="hidden" name="_csrf" value="${_csrf.token}">
-    </form>
-</div>
+    </div>
+
 
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <!-- DataTables JS -->
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
-<!-- Bootstrap JS -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
 $(document).ready(function () {
-    // Initialize DataTables
     var table = $('#receiversTable').DataTable({
+        scrollX: true,
+        autoWidth: false,
         ajax: {
             url: '/admin/getAllReceivers',
             dataSrc: ''
         },
         columns: [
-            { data: 'id' },
-            { data: 'name' }
-        ]
+            { data: 'id', visible: false, createdCell: function (cell) { $(cell).addClass('black-border'); } },
+            { data: 'name', createdCell: function (cell) { $(cell).addClass('black-border'); } }
+        ],
+        order: [],
+        ordering: true,
+        rowCallback: function(row, data, index) {
+            $(row).removeClass('odd');
+            $(row).removeClass('even');
+            $(row).removeClass('hover');
+        },
+        createdRow: function(row, data, dataIndex) {
+            $(row).removeClass('hover');
+        },
+        drawCallback: function(settings) {
+            $('#receiversTable tbody tr').removeClass('hover');
+        },
+        "language": {
+            "sEmptyTable": "Nincs rendelkezésre álló adat",
+            "sInfo": "Találatok: _START_ - _END_ Összesen: _TOTAL_",
+            "sInfoEmpty": "Nulla találat",
+            "sInfoFiltered": "(_MAX_ összes rekord közül szűrve)",
+            "sInfoPostFix": "",
+            "sInfoThousands": ".",
+            "sLengthMenu": "_MENU_ találat oldalanként",
+            "sLoadingRecords": "Betöltés...",
+            "sProcessing": "Feldolgozás...",
+            "sSearch": "Keresés:",
+            "sZeroRecords": "Nincs a keresésnek megfelelő találat",
+            "oPaginate": {
+                "sFirst": "Első",
+                "sPrevious": "Előző",
+                "sNext": "Következő",
+                "sLast": "Utolsó"
+            },
+            "oAria": {
+                "sSortAscending": ": aktiválja a növekvő rendezéshez",
+                "sSortDescending": ": aktiválja a csökkenő rendezéshez"
+            }
+        }
     });
 
-    // Function to create notification div
     function createNotification(message, type) {
         var notificationHtml = `
-            <div id="notification" class="alert alert-dismissible alert-${type} fade show">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+            <div id="notification" class="alert alert-dismissible alert-${type} fade show" role="alert">
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 <span id="notification-message">${message}</span>
             </div>
         `;
         $('#notification-container').html(notificationHtml);
-        console.log('Notification should be shown now.');
     }
 
-    // Handle form submission for adding receivers
+    $('#showAddReceiver').click(function() {
+        $('#addReceiverContainer').show();
+        $(this).hide();
+    });
+
+    $('#cancelAddReceiver').click(function() {
+        $('#addReceiverContainer').hide();
+        $('#showAddReceiver').show();
+    });
+
     $('#addReceiverForm').submit(function(event) {
-        event.preventDefault(); // Stop the form from causing a page reload
+        event.preventDefault();
         var formData = $(this).serialize();
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
             data: formData,
             success: function(response) {
-                console.log('Add receiver response:', response);
                 if (response.success) {
                     createNotification(response.message, 'success');
-                    // Refresh receivers table
                     table.ajax.reload();
-                    // Clear the input field
                     $('#name').val('');
+                    $('#addReceiverContainer').hide();
+                    $('#showAddReceiver').show();
                 } else {
                     createNotification(response.message, 'danger');
                 }
             },
             error: function(xhr) {
-                console.log('Error adding receiver:', xhr.statusText);
-                createNotification('Error adding receiver: ' + xhr.statusText, 'danger');
+                createNotification('Hiba a fogadó fél hozzáadása közben: ' + xhr.statusText, 'danger');
             }
         });
     });
 
-    // Show modify receivers
     $('#showModifyReceiver').click(function() {
         $.getJSON('/admin/getAllReceivers', function(data) {
             var select = $('#modifyReceiverSelect');
@@ -186,112 +323,124 @@ $(document).ready(function () {
                 value: '',
                 disabled: true,
                 selected: true,
-                text: 'Select a receiver'
+                text: 'Fogadó fél kiválasztása'
             }));
             $.each(data, function(index, receiver) {
                 select.append($('<option>', { value: receiver.id, text: receiver.name }));
             });
             $('#modifyReceiverContainer').show();
+            $('#showModifyReceiver').hide();
+            $('#cancelModifyReceiver').show();
         }).fail(function() {
-            alert('Error fetching receivers');
+            alert('Hiba a fogadó felek lekérdezése közben');
         });
     });
 
-    // Handle form submission for modifying receivers
+    $('#cancelModifyReceiver').click(function() {
+        $('#modifyReceiverContainer').hide();
+        $('#showModifyReceiver').show();
+        $('#cancelModifyReceiver').hide();
+        $('#newReceiverGroup').hide();
+        $('#inlineButtons').hide();
+        $('#modifyReceiverSelect').val('');
+        $('#newReceiverName').val('');
+    });
+
     $('#modifyReceiverForm').submit(function(event) {
-        event.preventDefault(); // Stop the form from causing a page reload
+        event.preventDefault();
         var formData = $(this).serialize();
         $.ajax({
             url: $(this).attr('action'),
             type: 'POST',
             data: formData,
             success: function(response) {
-                console.log('Modify receiver response:', response);
                 if (response.success) {
                     createNotification(response.message, 'success');
-                    // Reset and hide form fields
                     $('#modifyReceiverContainer').hide();
+                    $('#showModifyReceiver').show();
+                    $('#cancelModifyReceiver').hide();
                     $('#newReceiverGroup').hide();
-                    $('#saveReceiverButton').hide();
-                    $('#cancelModifyButton').hide();
+                    $('#inlineButtons').hide();
                     $('#modifyReceiverSelect').val('');
-                    $('#newReceiverName').val(''); // Clear the input field
-                    // Refresh receivers table
+                    $('#newReceiverName').val('');
                     table.ajax.reload();
                 } else {
                     createNotification(response.error, 'danger');
                 }
             },
             error: function(xhr) {
-                console.log('Error modifying receiver:', xhr.statusText);
-                createNotification('Error modifying receiver: ' + xhr.statusText, 'danger');
+                createNotification('Hiba a fogadó fél módosítása közben: ' + xhr.statusText, 'danger');
             }
         });
     });
 
-    // Show new receiver name input and populate it when a receiver is selected
     $('#modifyReceiverSelect').change(function() {
         var selectedReceiverId = $(this).val();
         var selectedReceiverName = $(this).find("option:selected").text();
-        console.log("Receiver selected:", selectedReceiverId, selectedReceiverName); // Debug log
         if (selectedReceiverId) {
-            $('#newReceiverName').val(selectedReceiverName); // Set the selected name in the input
+            $('#newReceiverName').val(selectedReceiverName);
             $('#newReceiverGroup').show();
-            $('#saveReceiverButton').show();
-            $('#cancelModifyButton').show();
+            $('#cancelModifyReceiver').hide();
+            $('#inlineButtons').show();
         } else {
             $('#newReceiverGroup').hide();
-            $('#saveReceiverButton').hide();
-            $('#cancelModifyButton').hide();
-            $('#newReceiverName').val(''); // Clear the input field
+            $('#inlineButtons').hide();
         }
     });
 
-    // Cancel modify
-    $('#cancelModifyButton').click(function() {
+    $('#cancelModifyReceiverInline').click(function() {
         $('#modifyReceiverContainer').hide();
+        $('#showModifyReceiver').show();
+        $('#cancelModifyReceiver').hide();
         $('#newReceiverGroup').hide();
-        $('#saveReceiverButton').hide();
-        $('#cancelModifyButton').hide();
+        $('#inlineButtons').hide();
         $('#modifyReceiverSelect').val('');
-        $('#newReceiverName').val(''); // Clear the input field
+        $('#newReceiverName').val('');
     });
 
-    // Show deletable receivers
     $('#showDeletableReceivers').click(function() {
         $.getJSON('/admin/getDeletableReceivers', function(data) {
             var select = $('#deletableReceiverSelect');
             select.empty();
-            select.append($('<option>', { value: '', disabled: true, selected: true, text: 'Select a receiver' }));
+            select.append($('<option>', { value: '', disabled: true, selected: true, text: 'Fogadó fél kiválasztása' }));
             if (data.length > 0) {
                 $.each(data, function(index, receiver) {
                     select.append($('<option>', { value: receiver.id, text: receiver.name }));
                 });
-                $('#deletableReceiverContainer').show(); // Show container
+                $('#deletableReceiverContainer').show();
+                $('#showDeletableReceivers').hide();
+                $('#cancelShowDeletableReceivers').show();
             } else {
                 alert('No deletable receivers found');
                 $('#deletableReceiverContainer').hide();
             }
         }).fail(function() {
-            console.error('Error fetching deletable receivers');
-            alert('Error fetching deletable receivers');
+            alert('Hiba a fogadó felek lekérdezése közben');
         });
     });
 
-    // Listen for changes on the select dropdown
+    $('#cancelShowDeletableReceivers').click(function() {
+        $('#deletableReceiverContainer').hide();
+        $('#showDeletableReceivers').show();
+        $('#cancelShowDeletableReceivers').hide();
+        $('#deleteReceiverButton').hide();
+        $('#cancelDeleteButton').hide();
+        $('#deletableReceiverSelect').val('');
+    });
+
     $('#deletableReceiverSelect').change(function() {
         var selected = $(this).val();
-        console.log("Selection changed, selected value:", selected); // Debug output
         if (selected) {
             $('#deleteReceiverButton').show();
             $('#cancelDeleteButton').show();
+            $('#cancelShowDeletableReceivers').hide();
         } else {
             $('#deleteReceiverButton').hide();
             $('#cancelDeleteButton').hide();
+            $('#cancelShowDeletableReceivers').show();
         }
     });
 
-    // Handle form submission for deletion via AJAX
     $('#deleteReceiverForm').submit(function(event) {
         event.preventDefault();
         var selectedReceiverId = $('#deletableReceiverSelect').val();
@@ -300,35 +449,35 @@ $(document).ready(function () {
             type: 'POST',
             data: $(this).serialize(),
             success: function(response) {
-                console.log('Delete receiver response:', response);
-                if(response.success) {
+                if (response.success) {
                     createNotification(response.message, 'success');
-                    // Hide the select options and buttons
                     $('#deletableReceiverContainer').hide();
                     $('#deleteReceiverButton').hide();
                     $('#cancelDeleteButton').hide();
                     $('#deletableReceiverSelect').val('');
-                    // Refresh receivers table
+                    $('#showDeletableReceivers').show();
+                    $('#cancelShowDeletableReceivers').hide();
                     table.ajax.reload();
                 } else {
                     createNotification(response.message, 'danger');
                 }
             },
             error: function(xhr) {
-                console.log('Error deleting receiver:', xhr.statusText);
-                createNotification('Error deleting receiver: ' + xhr.statusText, 'danger');
+                createNotification('Hiba a fogadó fél törlése közben: ' + xhr.statusText, 'danger');
             }
         });
     });
 
-    // Cancel delete
     $('#cancelDeleteButton').click(function() {
         $('#deletableReceiverContainer').hide();
         $('#deleteReceiverButton').hide();
         $('#cancelDeleteButton').hide();
         $('#deletableReceiverSelect').val('');
+        $('#showDeletableReceivers').show();
+        $('#cancelShowDeletableReceivers').hide();
     });
 });
+
 </script>
 
 </body>

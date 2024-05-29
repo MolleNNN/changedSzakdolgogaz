@@ -22,8 +22,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "LEFT JOIN FETCH u.results r " +
             "LEFT JOIN FETCH r.ppt")
     List<User> findAllWithDetails();*/
-	
-    Optional<User> findByNameAndBirthdate(String name, Date birthdate);
 
 
 
@@ -59,6 +57,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     	       "LEFT JOIN FETCH u.receiver " +
     	       "LEFT JOIN FETCH u.company " +
     	       "LEFT JOIN FETCH u.results r " +
-    	       "LEFT JOIN FETCH r.ppt")
+    	       "LEFT JOIN FETCH r.ppt " +
+    	       "ORDER BY u.name ASC")
     	List<User> findAllWithDetails1();
+
 }

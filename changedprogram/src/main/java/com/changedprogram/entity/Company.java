@@ -23,10 +23,6 @@ public class Company {
 
     @NotBlank(message = "Company name cannot be blank")
     @Size(min = 2, max = 255, message = "Company name must be between 2 and 255 characters")
-    @Pattern(
-        regexp = "^[A-Za-zÀ-ÿ-.\\s]+$", 
-        message = "Company name can contain alphabets, hyphens, periods, and Hungarian characters only"
-    )
     private String name;
    
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)

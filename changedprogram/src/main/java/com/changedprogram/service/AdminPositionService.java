@@ -102,10 +102,6 @@ public class AdminPositionService {
             throw new IllegalArgumentException("Position name must be between 2 and 255 characters.");
         }
 
-        Pattern pattern = Pattern.compile("^[A-Za-zÀ-ÿŐő\\.\\s\\-]+[A-Za-zÀ-ÿŐő\\.\\s\\-]*$");
-        if (!pattern.matcher(name.trim()).matches()) {
-            throw new IllegalArgumentException("The name can only contain letters, hyphens, dots, and accented characters.");
-        }
     }
 
     private String formatPositionName(String name) {

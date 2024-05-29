@@ -122,78 +122,7 @@ public class AdminController {
     }
 
 
-    @GetMapping("/admin/modifydata")
-    public String showModifyDataForm(@RequestParam(required = false) Long userId, Model model) {
-        model.addAttribute("users", userRepository.findAll());  // All users for the dropdown
-        model.addAttribute("positions", positionRepository.findAll());  // All positions for the dropdown
-        model.addAttribute("companies", companyRepository.findAll());  // All companies for the dropdown
-        model.addAttribute("receivers", receiverRepository.findAll());  // All receivers for the dropdown
-
-        if (userId != null) {
-            User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
-            model.addAttribute("user", user);
-        } else {
-            model.addAttribute("user", new User()); // default empty user to avoid null checks in Thymeleaf
-        }
-        return "modifydata";
-    }
-
-
-    @PostMapping("/admin/updateUser")
-    public String updateUser(@ModelAttribute User userFormData, RedirectAttributes redirectAttributes) {
-        User existingUser = userRepository.findById(userFormData.getId())
-                                          .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Check for another user with the same name and birthdate
-        Optional<User> existingUserWithSameNameAndBirthdate = userRepository.findByNameAndBirthdate(
-            userFormData.getName(), 
-            userFormData.getBirthdate()
-        );
-
-        if (existingUserWithSameNameAndBirthdate.isPresent() && 
-                !existingUserWithSameNameAndBirthdate.get().getId().equals(userFormData.getId())) {
-                // There is another user with the same name and birthdate
-                redirectAttributes.addFlashAttribute("errorMessage", "User already exists with the same name and birthdate.");
-                return "redirect:/admin/modifydata?userId=" + userFormData.getId();
-            }
-
-        // Proceed with updating the user's details
-        existingUser.setName(userFormData.getName());
-        existingUser.setEmail(userFormData.getEmail());
-        existingUser.setPhoneNumber(userFormData.getPhoneNumber());
-        existingUser.setBirthdate(userFormData.getBirthdate());
-        existingUser.setActive(userFormData.isActive());
-
-        // Assume relationships (positions, companies, receivers) are updated correctly here
-        // Assume relationships (positions, companies, receivers) are updated correctly here
-        // Reattach the relationships
-        Position position = positionRepository.findById(userFormData.getPosition().getId()).orElse(null);
-        existingUser.setPosition(position);
-
-        Company company = companyRepository.findById(userFormData.getCompany().getId()).orElse(null);
-        existingUser.setCompany(company);
-
-        Receiver receiver = receiverRepository.findById(userFormData.getReceiver().getId()).orElse(null);
-        existingUser.setReceiver(receiver);
-        
-        
-        userRepository.save(existingUser);
-        redirectAttributes.addFlashAttribute("successMessage", "User updated successfully!");
-        return "redirect:/admin/modifydata?userId=" + userFormData.getId();
-
-    }
-
-
-
-    
-
-
-    @GetMapping("/getUserDetailsById/{id}")
-    @ResponseBody
-    public User getUserDetailsById(@PathVariable Long id) {
-        return userRepository.findById(id).orElse(null); // Add error handling as appropriate
-    }
+ 
 
 }
 

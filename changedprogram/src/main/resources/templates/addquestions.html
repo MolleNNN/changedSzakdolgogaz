@@ -2,243 +2,323 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Add Questions</title>
-    <meta name="csrf-token" th:content="${_csrf.token}"/>
-	<meta name="csrf-param" th:content="${_csrf.parameterName}"/>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
+    <title>Manage Questions</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+        <link rel="stylesheet" th:href="@{/css/nav.css}"> <!-- Link to custom CSS -->
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+        <style>
+        .custom-table thead {
+            background-color: #d3d3d3 !important;
+            color: black !important; /* Ensures text color contrast */
+        }
+        .custom-table th.question-column {
+            width: 80%;
+        }
+        .custom-table th.answer-column {
+            width: 20%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/datas}">Adatok</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/results}">Eredmények</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/statistics}">Statisztika</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/ppt}">Oktatások</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/dataupload}">Adatok feltöltése</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div  class="container mt-5">
+    <div class="card mb-4">
+        <div class="card-header text-center">
+            <h1>Jelenlegi prezentáció: <span th:text="${pptName}"></span></h1>
+        </div>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${message}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- First Row: Adding Questions -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h2>Új kérdés hozzáadása</h2>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/addquestion}" method="post" id="questionForm">
+                        <input type="hidden" name="pptId" th:value="${pptId}" />
+                        <div class="mb-3">
+                            <label for="question" class="form-label">Kérdés:</label>
+                            <input type="text" id="question" name="question" class="form-control" required maxlength="120">
+                        </div>
+                        <div class="mb-3">
+                            <label for="answer" class="form-label">Válasz:</label>
+                            <select id="answer" name="answer" class="form-select">
+                                <option value="true">Igaz</option>
+                                <option value="false">Hamis</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <button type="submit" class="btn btn-primary">Hozzáad</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h2>Kérdések feltöltése excel fájlból</h2>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/admin/uploadQuestions}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="pptId" th:value="${pptId}" />
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Fájl kiválasztása:</label>
+                            <input type="file" id="file" name="file" class="form-control" accept=".xlsx,.xls" required>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <button type="submit" class="btn btn-success">Feltölt</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Modify and Delete Questions -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h2>Kérdés módosítása</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <button id="modifyButton" class="btn btn-info">Módosít</button>
+                        <button id="cancelModifyButton" class="btn btn-secondary" style="display: none;">Vissza</button>
+                    </div>
+                    <div id="modifyContainer" style="display: none;">
+                        <select id="questionSelect" class="form-select mb-3">
+                            <option value="" disabled selected>Kérdés kiválasztása</option>
+                            <th:block th:each="question : ${deletableQuestions}">
+                                <option th:value="${question.id}" th:data-text="${question.text}" th:data-answer="${question.answer}">
+                                    [[${question.text}]]
+                                </option>
+                            </th:block>
+                        </select>
+                        <form th:action="@{/admin/modifyQuestion}" method="post" id="editQuestionForm" style="display: none;">
+                            <input type="hidden" id="questionId" name="questionId" />
+                            <div class="mb-3">
+                                <label for="editQuestionText" class="form-label">Kérdés:</label>
+                                <input type="text" id="editQuestionText" name="question" class="form-control" required maxlength="120">
+                            </div>
+                            <div class="mb-3">
+                                <label for="editAnswer" class="form-label">Válasz:</label>
+                                <select id="editAnswer" name="answer" class="form-select">
+                                    <option value="true">Igaz</option>
+                                    <option value="false">Hamis</option>
+                                </select>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                <button type="submit" class="btn btn-success me-2">Változtatások mentése</button>
+                                <button type="button" id="cancelEditButton" class="btn btn-secondary">Vissza</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h2>Kérdés törlése</h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <button id="deleteQuestionButton" class="btn btn-danger">Törlés</button>
+                        <button id="cancelDeleteQuestionButton" class="btn btn-secondary" style="display: none;">Vissza</button>
+                    </div>
+                    <div id="deleteContainer" style="display: none;">
+                        <select id="deleteQuestionSelect" class="form-select mb-3" name="questionId" form="deleteQuestionForm">
+                            <option value="" disabled selected>Kérdés kiválasztása</option>
+                            <th:block th:each="question : ${deletableQuestions}">
+                                <option th:value="${question.id}" th:text="${question.text}"></option>
+                            </th:block>
+                        </select>
+                        <form th:action="@{/admin/deleteQuestion}" method="post" id="deleteQuestionForm" style="display: none;">
+                            <div class="d-flex justify-content-center">
+                                <button type="submit" class="btn btn-danger me-2">Törlés</button>
+                                <button type="button" id="cancelDeleteButton" class="btn btn-secondary">Vissza</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Third Row: Existing Questions Table -->
+<div class="card mb-4">
+    <div class="card-header text-center">
+        <h2>Meglévő kérdések</h2>
+    </div>
+    <div class="card-body">
+        <table class="table table-striped custom-table">
+<thead>
+    <tr>
+        <th class="question-column" style="background-color: #d3d3d3; color: black;">Kérdés</th>
+        <th class="answer-column" style="background-color: #d3d3d3; color: black;">Válasz</th>
+    </tr>
+</thead>
+            <tbody>
+                <tr th:each="question : ${questions}">
+                    <td th:text="${question.text}"></td>
+                    <td>
+                        <span th:if="${question.answer}">Igaz</span>
+                        <span th:unless="${question.answer}">Hamis</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+<script>
     $(document).ready(function() {
         // CSRF token setup for AJAX
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
         var csrfHeader = $('meta[name="csrf-param"]').attr('content');
-        
-        // Log CSRF token and header to the console
+
         console.log("CSRF Token:", csrfToken);
         console.log("CSRF Header:", csrfHeader);
 
-        // Setup AJAX to append CSRF token on each request
-        $.ajaxSetup({
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader(csrfHeader, csrfToken);
-                console.log("Sending CSRF Token:", csrfToken); // Log the token being sent
-
-            }
-        });
-
-        
-        // Handle form submission for new questions
+        // Validation for adding new questions
         $('#questionForm').on('submit', function(event) {
             var questionInput = $('#question').val().trim();
-            if (questionInput.length < 4) {
-                alert('Question must be at least 4 characters long.');
+            if (questionInput.replace(/\s/g, '').length < 4) {
+                alert('A kérdésnek legalább 4 karakterből kell állnia, szóközök nem számítanak bele');
                 event.preventDefault();
             }
         });
 
         // Toggle the modification form visibility
         $('#modifyButton').click(function() {
-            $('#modifyContainer').toggle();  // This should now correctly toggle the visibility
+            $('#modifyButton').hide();
+            $('#cancelModifyButton').show();
+            $('#modifyContainer').show();
+        });
+
+        $('#cancelModifyButton').click(function() {
+            resetModifyForm();
         });
 
         // Populate and show the modification form when a question is selected
         $('#questionSelect').change(function() {
             var selectedText = $(this).find('option:selected').data('text');
             var selectedAnswer = $(this).find('option:selected').data('answer');
+            var questionId = $(this).val();
+
             $('#editQuestionText').val(selectedText);
             $('#editAnswer').val(selectedAnswer.toString());
+            $('#questionId').val(questionId);
             $('#editQuestionForm').show();
+            $('#cancelModifyButton').hide(); // Hide the upper cancel button when an option is selected
         });
 
-        // Handle the submission of the modified question
+        // Validation for modifying questions
         $('#editQuestionForm').on('submit', function(event) {
-            event.preventDefault();
-
-            var formData = {
-                questionId: $('#questionSelect').val(),
-                question: $('#editQuestionText').val().trim(),
-                answer: $('#editAnswer').val(),
-                [csrfHeader]: csrfToken  // Correct syntax for dynamic property names
-            };
-
-            $.ajax({
-                url: '/admin/modifyQuestion',
-                type: 'POST',
-                data: formData,
-                success: function(response) {
-                    console.log('Question updated successfully');
-                    alert('Question updated successfully');
-                    location.reload();  // Reload the page to show changes
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error updating question:', status, error);
-                    alert('Error updating question: ' + error);
-                }
-            });
-        });
-    });
-    $(document).ready(function() {
-        // CSRF token setup
-        var csrfToken = $('meta[name="csrf-token"]').attr('content');
-        var csrfHeader = $('meta[name="csrf-param"]').attr('content');
-
-        $('#deleteQuestionButton').click(function() {
-            $('#deleteContainer').toggle();
-        });
-
-        $('#confirmDeleteButton').click(function() {
-            var questionId = $('#deleteQuestionSelect').val();
-            if (questionId) {
-                var data = {
-                    questionId: questionId
-                };
-                data[csrfHeader] = csrfToken;  // Add CSRF token to the request data
-
-                $.ajax({
-                    url: '/admin/deleteQuestion',
-                    type: 'POST',
-                    data: data,
-                    success: function(response) {
-                        alert('Question deleted successfully');
-                        location.reload();  // Reload the page to reflect the changes
-                    },
-                    error: function(xhr, status, error) {
-                        alert('Error deleting question: ' + error);
-                    }
-                });
-            } else {
-                alert('Please select a question to delete.');
+            var questionInput = $('#editQuestionText').val().trim();
+            if (questionInput.replace(/\s/g, '').length < 4) {
+                alert('A kérdésnek legalább 4 karakterből kell állnia, szóközök nem számítanak bele');
+                event.preventDefault();
             }
         });
 
-        $('#cancelDeleteButton').click(function() {
-            $('#deleteContainer').hide();
+        // Cancel button inside the edit form
+        $('#cancelEditButton').click(function() {
+            resetModifyForm();
         });
+
+        function resetModifyForm() {
+            $('#modifyButton').show();
+            $('#cancelModifyButton').hide();
+            $('#modifyContainer').hide();
+            $('#editQuestionForm').hide();
+            $('#questionSelect').val('');
+            $('#editQuestionText').val('');
+            $('#editAnswer').val('true');
+            $('#questionId').val('');
+        }
+
+        // Toggle delete container visibility
+        $('#deleteQuestionButton').click(function() {
+            $('#deleteQuestionButton').hide();
+            $('#cancelDeleteQuestionButton').show();
+            $('#deleteContainer').show();
+        });
+
+        $('#cancelDeleteQuestionButton').click(function() {
+            resetDeleteForm();
+        });
+
+        // Populate and show the deletion form when a question is selected
+        $('#deleteQuestionSelect').change(function() {
+            $('#cancelDeleteQuestionButton').hide(); // Hide the upper cancel button when an option is selected
+            $('#deleteQuestionForm').show();
+        });
+
+        // Cancel button inside the delete form
+        $('#cancelDeleteButton').click(function() {
+            resetDeleteForm();
+        });
+
+        function resetDeleteForm() {
+            $('#deleteQuestionButton').show();
+            $('#cancelDeleteQuestionButton').hide();
+            $('#deleteContainer').hide();
+            $('#deleteQuestionForm').hide();
+            $('#deleteQuestionSelect').val('');
+        }
     });
-
-    </script>
-</head>
-<body class="container mt-5">
-
-    <h1 class="mb-4">Add Questions for PPT: <span th:text="${pptName}"></span></h1>
-
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>Add New Question</h2>
-        </div>
-        <div class="card-body">
-            <form th:action="@{/admin/addquestion}" method="post" id="questionForm">
-                <input type="hidden" name="pptId" th:value="${pptId}" />
-                <div class="form-group">
-                    <label for="question">Question:</label>
-                    <input type="text" id="question" name="question" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="answer">Answer:</label>
-                    <select id="answer" name="answer" class="form-control">
-                        <option value="true">True</option>
-                        <option value="false">False</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>Upload Questions from Excel</h2>
-        </div>
-        <div class="card-body">
-            <form th:action="@{/admin/uploadQuestions}" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="pptId" th:value="${pptId}" />
-                <div class="form-group">
-                    <label for="file">Select Excel File:</label>
-                    <input type="file" id="file" name="file" class="form-control-file" accept=".xlsx,.xls" required>
-                </div>
-                <button type="submit" class="btn btn-success">Upload</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>Existing Questions</h2>
-        </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Question</th>
-                        <th>Answer</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="question : ${questions}">
-                        <td th:text="${question.text}"></td>
-                        <td th:text="${question.answer}"></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <!-- New Modification Section -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <h2>Modify Question</h2>
-            <button id="modifyButton" class="btn btn-info">Modify</button>
-        </div>
-        <div class="card-body" id="modifyContainer" style="display: none;">
-            <select id="questionSelect" class="form-control mb-3">
-                <option value="" disabled selected>Select a question</option>
-                <th:block th:each="question : ${questions}">
-                    <option th:value="${question.id}" th:data-text="${question.text}" th:data-answer="${question.answer}">
-                        [[${question.text}]]
-                    </option>
-                </th:block>
-            </select>
-            <form id="editQuestionForm" style="display: none;">
-                <div class="form-group">
-                    <label for="editQuestionText">Question Text:</label>
-                    <input type="text" id="editQuestionText" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="editAnswer">Answer:</label>
-                    <select id="editAnswer" class="form-control">
-                        <option value="true">True</option>
-                        <option value="false">False</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-success">Save Changes</button>
-            </form>
-        </div>
-    </div>
-<div class="card mb-4">
-    <div class="card-header">
-        <h2>Delete Question</h2>
-        <button id="deleteQuestionButton" class="btn btn-danger">Delete Question</button>
-    </div>
-    <div class="card-body" id="deleteContainer" style="display: none;">
-        <select id="deleteQuestionSelect" class="form-control mb-3">
-            <option value="" disabled selected>Select a question to delete</option>
-            <th:block th:each="question : ${questions}">
-                <option th:value="${question.id}" th:text="${question.text}"></option>
-            </th:block>
-        </select>
-        <button id="confirmDeleteButton" class="btn btn-danger">Delete</button>
-        <button id="cancelDeleteButton" class="btn btn-secondary">Cancel</button>
-    </div>
-</div>
-    <form th:action="@{/admin/ppt}" method="get" class="mt-3">
-        <button type="submit" class="btn btn-secondary">Back to PPT Page</button>
-    </form>
-
+</script>
 
 </body>
 </html>

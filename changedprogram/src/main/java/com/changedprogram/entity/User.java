@@ -50,7 +50,7 @@ public class User {
     @Column(name = "phone_number")
     private String phoneNumber;
     
-   // @Column(name = "tax_number", unique = true, nullable = false)
+    @Column(name = "tax_number", unique = true, nullable = false)
     private String taxNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)

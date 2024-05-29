@@ -26,8 +26,7 @@ public class Position {
 
     @NotBlank(message = "Position name cannot be blank")
     @Size(min = 2, max = 255, message = "Position name must be between 2 and 255 characters")
-    @Pattern(regexp = "^[A-Za-zÀ-ÿŐő\\.\\s\\-]+[A-Za-zÀ-ÿŐő\\.\\s\\-]*$", message = "A név csak betűket, kötőjeleket, pontokat és magyar karaktereket tartalmazhat")
-    @Column(name = "name", unique = true)
+    @Column(name = "name")
     private String name;
 
     @OneToMany(mappedBy = "position")

@@ -107,6 +107,9 @@ public class FileService {
             throw new IllegalStateException("Cannot upload empty file");
         }
 
+        // Trim unnecessary white spaces
+        name = name.trim();
+
         // Store the PPT metadata
         Ppt ppt = new Ppt();
         ppt.setFilename(name);
@@ -133,7 +136,7 @@ public class FileService {
             BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = img.createGraphics();
 
-            // best rendering settings
+            // Best rendering settings
             graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 
@@ -152,6 +155,7 @@ public class FileService {
         }
         return ppt;
     }
+
 
 
     

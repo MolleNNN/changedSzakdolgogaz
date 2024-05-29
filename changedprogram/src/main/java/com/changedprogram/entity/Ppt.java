@@ -3,9 +3,11 @@ package com.changedprogram.entity;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -27,24 +29,26 @@ public class Ppt {
     private boolean isActive = false;  // Default to false
     
     // Establish the one-to-many relationship with Image
-    @OneToMany(mappedBy = "ppt", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ppt", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Image> images;
     
-    @OneToMany(mappedBy = "ppt")
+    @OneToMany(mappedBy = "ppt", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonIgnore
     private Set<Result> results;
     
-    @OneToMany(mappedBy = "ppt", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ppt", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Question> questions;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "language_id", nullable = false)
+    @JsonBackReference
     private Language language;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_id", nullable = false)
+    @JsonBackReference
     private Type type;
     
 	public Long getId() {

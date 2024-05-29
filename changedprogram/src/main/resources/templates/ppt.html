@@ -3,18 +3,780 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" th:content="${_csrf.token}"/>
-<meta name="csrf-param" th:content="${_csrf.parameterName}"/>
+    <meta name="csrf-param" th:content="${_csrf.parameterName}"/>
     
+    <title>Oktatások</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
+        <link rel="stylesheet" th:href="@{/css/nav.css}"> <!-- Link to custom CSS -->
     
-    <title>PPT Management</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    	<link rel="stylesheet" th:href="@{/css/styles.css}" />
-    	
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script th:src="@{/js/scripts.js}"></script>
-    <script>
-    function setPptSession(pptId) {
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
+    
+
+    <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    
+
+    <style>
+        .card-custom {
+            min-height: 100px; /* Adjust this value as needed */
+        }
+
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* Center content vertically */
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px; /* Add space between buttons */
+            width: 100%;
+        }
+
+        .data-table-container {
+            margin-top: 20px; /* Add space between the tables */
+        }
+
+        .types-card, .ppts-card {
+            width: 100%; /* Ensure it takes full width of the container */
+            margin: auto;
+        }
+
+        .type-table-wrapper, .ppt-table-wrapper {
+            width: 100%; /* Ensure the wrapper takes up the full width */
+            overflow: hidden; /* Prevent overflow */
+        }
+
+        .type-table, .ppt-table {
+            width: 100%; /* Ensure the table takes up the full width of its container */
+            border-collapse: collapse; /* Ensure borders collapse */
+        }
+
+        /* Custom styling for the table rows */
+        .type-table tbody tr, .ppt-table tbody tr {
+            border-bottom: 1px solid black !important;
+        }
+
+        /* Custom styling for the table headers */
+        .type-table th, .ppt-table th {
+            border-bottom: 0px solid black;
+            text-align: center; /* Center align the headers */
+            padding: 8px;
+                background-color: #d3d3d3 !important;
+    color: black !important;
+        }
+
+        /* Custom styling for the table cells */
+        .type-table td, .ppt-table td {
+            padding: 8px;
+            border-bottom: 1px solid black; /* Add border to table cells */
+            text-align: center; /* Center align the cells */
+ 
+        }
+
+        /* Ensure the table wrapper does not add box shadows */
+        .dataTables_wrapper {
+            box-shadow: none !important;
+        }
+
+        /* Additional DataTables overrides to ensure borders are black */
+        .dataTables_wrapper .dataTables_paginate, 
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_processing {
+            color: black;
+        }
+
+        /* Ensure DataTables applies custom row borders */
+        .dataTables_wrapper .dataTables_scrollBody .type-table tbody tr,
+        .dataTables_wrapper .dataTables_scrollBody .ppt-table tbody tr {
+            border-bottom: 1px solid black !important;
+        }
+
+        /* Remove the default DataTables bottom border */
+        .dataTables_wrapper .dataTables_scrollBody .type-table tbody tr:last-child,
+        .dataTables_wrapper .dataTables_scrollBody .ppt-table tbody tr:last-child {
+            border-bottom: none !important;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        .notification {
+            display: none;
+            margin-bottom: 1rem;
+        }
+        
+        
+        
+        .select2-container {
+    z-index: 2050; /* Ensure this is higher than the modal backdrop */
+}
+
+.modal {
+    overflow: visible; /* Allow overflow to show dropdowns */
+}
+            #editTypeForm .btn {
+        margin-top: 20px; /* Adjust this value to move the button lower */
+    }
+    .table-responsive {
+    overflow-x: auto;
+}
+    </style>
+
+</head>
+<body>
+   <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/datas}">Adatok</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/results}">Eredmények</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/statistics}">Statisztika</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/ppt}">Oktatások</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/companies}">Cégek</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/receivers}">Fogadó felek</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/admin/dataupload}">Adatok feltöltése</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <!-- Notification Div -->
+        <div id="notification" class="notification alert alert-dismissible fade show" role="alert">
+            <span id="notification-message"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Educations and Type Sections -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-3 card-custom">
+                    <div class="card-header text-center">
+                        <h2>Oktatások kezelése</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="button-group">
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#activatePptModal">Aktiválás / Deaktiválás</button>
+                            <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addPptModal">Hozzáadás</button>
+                            <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deletePptModal">Törlés</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card mb-3 card-custom">
+                    <div class="card-header text-center">
+                        <h2>Oktatás típusok</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="button-group">
+<button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#addTypeModal">Hozzáadás</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-3 card-custom types-card">
+                    <div class="card-header text-center">
+                        <h2>Oktatás típusok</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="type-table-wrapper">
+                            <table id="typeTable" class="type-table">
+                                <thead>
+                                    <tr>
+                                        <th>Név</th>
+                                        <th>Érvényes (hó)</th>
+                                        <th>Művelet</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="type : ${allTypes}">
+                                        <td th:text="${type.name}"></td>
+                                        <td th:text="${type.valid}"></td>
+                                        <td>
+                <button class="btn btn-primary btn-sm editTypeButton" th:data-id="${type.id}">Módosít</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-3 card-custom ppts-card">
+            <div class="card-header text-center">
+                <h2>Elérhető oktatások</h2>
+            </div>
+            <div class="card-body">
+                <div class="ppt-table-wrapper">
+                    <div class="table-responsive">
+                        <table id="pptTable" class="ppt-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Név</th>
+                                    <th>Nyelv</th>
+                                    <th>Típus</th>
+                                    <th>Aktív</th>
+                                    <th>Műveletek</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="ppt : ${allPpts}">
+                                    <td th:text="${ppt.id}"></td>
+                                    <td th:text="${ppt.filename}"></td>
+                                    <td th:text="${ppt.languageName}"></td>
+                                    <td th:text="${ppt.typeName}"></td>
+                                    <td th:text="${ppt.active ? 'Yes' : 'No'}"></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-info btn-sm" th:onclick="'openPptModal(' + ${ppt.id} + ')'">Megtekint</button>
+                                            <button class="btn btn-warning btn-sm" th:onclick="'setPptSession(' + ${ppt.id} + ')'">Kérdések</button>
+                                            <button class="btn btn-primary btn-sm modifyPptButton" th:data-id="${ppt.id}">Módosít</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+<!-- Activate PPT Modal -->
+<div class="modal fade" id="activatePptModal" tabindex="-1" aria-labelledby="activatePptModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="activatePptModalLabel">Oktatás aktiválás / deaktiválás</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="activatePptForm" th:action="@{/changeActivePpt}" method="post">
+                    <input type="hidden" id="activePptIds" th:value="${activePptIds}" />
+                    <div class="mb-3">
+                        <label for="pptSelect" class="form-label">Prezentációk:</label>
+                        <select id="pptSelect" name="pptIds" class="form-select" multiple>
+                            <option th:each="ppt : ${pptWithQuestions}" th:value="${ppt.id}" th:text="${ppt.filename}"></option>
+                        </select>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary d-block mx-auto">Mentés</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Add PPT Modal -->
+<div class="modal fade" id="addPptModal" tabindex="-1" aria-labelledby="addPptModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPptModalLabel">Prezentáció hozzáadása</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/uploadPpt}" method="post" enctype="multipart/form-data" id="pptForm">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Oktatás neve:</label>
+                        <input type="text" id="name" name="name" class="form-control" required minlength="2" maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="file" class="form-label">PPT fájl megadása:</label>
+                        <input type="file" id="file" name="file" class="form-control" accept=".ppt,.pptx" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="languageCode" class="form-label">Nyelv:</label>
+                        <select id="languageCode" name="languageCode" class="form-select" required>
+                            <option value="" disabled selected>Nyelv kiválasztása</option>
+                            <th:block th:each="language : ${languages}">
+                                <option th:value="${language.code}" th:text="${language.name}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="typeId" class="form-label">Típus:</label>
+                        <select id="typeId" name="typeId" class="form-select" required>
+                            <option value="" disabled selected>Típus kiválasztása</option>
+                            <th:block th:each="type : ${types}">
+                                <option th:value="${type.id}" th:text="${type.name}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary">Feltölt</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete PPT Modal -->
+<div class="modal fade" id="deletePptModal" tabindex="-1" aria-labelledby="deletePptModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deletePptModalLabel">Oktatás törlése</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form with CSRF token for deleting PPT -->
+                <form id="deletePptForm" th:action="@{/admin/deletePpt}" method="post">
+                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="row">
+                        <div class="col text-center">
+                            <button id="showDeletablePpts" class="btn btn-danger mb-2" type="button">Törölhető oktatások</button>
+                        </div>
+                    </div>
+                    <div id="deletablePptContainer" style="display: none;">
+                        <div class="form-group mb-3">
+                            <select id="deletablePptSelect" name="pptId" class="form-control" required>
+                                <option value="" disabled selected>Válassz egy oktatást</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button id="deletePptButton" class="btn btn-danger me-2" type="submit" style="display: none;">Törlés</button>
+                            <button type="button" id="cancelDeleteButton" class="btn btn-secondary" style="display: none;">Vissza</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Type Modal -->
+<div class="modal fade" id="addTypeModal" tabindex="-1" aria-labelledby="addTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTypeModalLabel">Oktatás típus hozzáadása</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form for adding a new type -->
+                <form id="addTypeForm" th:action="@{/admin/addType}" method="post">
+                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <div class="mb-3">
+                        <label for="typeName" class="form-label">Név:</label>
+                        <input type="text" id="typeName" name="name" class="form-control" required maxlength="100">
+                    </div>
+                    <div class="mb-3">
+                        <label for="validityPeriod" class="form-label">Érvényességi idő (hónap):</label>
+                        <select id="validityPeriod" name="valid" class="form-select" required>
+                            <option value="" disabled selected>Érvényességi idő kiválasztása</option>
+                            <th:block th:each="i : ${#numbers.sequence(1, 24)}">
+                                <option th:value="${i}" th:text="${i}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary">Hozzáad</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Type Modal -->
+<div class="modal fade" id="editTypeModal" tabindex="-1" aria-labelledby="editTypeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTypeModalLabel">Típus szerkesztése</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Form with CSRF token for editing Type -->
+                <form id="editTypeForm" th:action="@{/admin/updateType}" method="post">
+                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" id="editTypeId" name="typeId"/>
+                    <div class="form-group mb-3">
+                        <label for="editTypeName">Név:</label>
+                        <input type="text" id="editTypeName" name="name" class="form-control" required minlength="2" maxlength="100"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTypeValid">Érvényességi idő (hónap):</label>
+                        <select id="editTypeValid" name="valid" class="form-control" required>
+                            <option value="" disabled>Érvényességi idő kiválasztása</option>
+                            <th:block th:each="i : ${#numbers.sequence(1,24)}">
+                                <option th:value="${i}" th:text="${i}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary">Mentés</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal to display PPT images -->
+<div class="modal fade" id="pptModal" tabindex="-1" aria-labelledby="pptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pptModalLabel">Prezentáció képek</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="pptImage" class="img-fluid mx-auto d-block" />
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button id="previousButton" class="btn btn-secondary" onclick="previousImage()">Előző</button>
+                <button id="nextButton" class="btn btn-secondary" onclick="nextImage()">Következő</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modify PPT Modal -->
+<div class="modal fade" id="modifyPptModal" tabindex="-1" aria-labelledby="modifyPptModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modifyPptModalLabel">Oktatás módosítása</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="modifyPptForm" th:action="@{/admin/updatePpt}" method="post">
+                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" id="modifyPptId" name="pptId"/>
+                    
+                    <div class="mb-3">
+                        <label for="modifyPptName" class="form-label">Oktatás neve:</label>
+                        <input type="text" id="modifyPptName" name="name" class="form-control" required minlength="2" maxlength="100">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modifyLanguageCode" class="form-label">Nyelv:</label>
+                        <select id="modifyLanguageCode" name="languageCode" class="form-select" required>
+                            <option value="" disabled selected>Nyelv kiválasztása</option>
+                            <th:block th:each="language : ${languages}">
+                                <option th:value="${language.code}" th:text="${language.name}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="modifyTypeId" class="form-label">Típus:</label>
+                        <select id="modifyTypeId" name="typeId" class="form-select" required>
+                            <option value="" disabled selected>Típus kiválasztása</option>
+                            <th:block th:each="type : ${types}">
+                                <option th:value="${type.id}" th:text="${type.name}"></option>
+                            </th:block>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary">Mentés</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script th:inline="javascript">
+$(document).ready(function() {
+    // Apply the settings to all modals to make them closeable only with the "X" button or escape key
+    $('.modal').each(function() {
+        $(this).modal({
+            backdrop: 'static',
+            keyboard: true
+        });
+    });
+
+    // Initialize Select2 for specific modals
+    $('#pptSelect').select2({
+        placeholder: 'Válassz oktatást',
+        width: '100%',
+        dropdownParent: $('#activatePptModal')
+    });
+
+    // Preselect options when the modal is shown
+    $('#activatePptModal').on('shown.bs.modal', function () {
+        var activePptIds = $('#activePptIds').val().split(',');
+        $('#pptSelect').val(activePptIds).trigger('change');
+    });
+
+    // Handle showDeletablePpts button click
+    $('#showDeletablePpts').click(function() {
+        $.getJSON('/admin/deletablePpts', function(data) {
+            var select = $('#deletablePptSelect');
+            select.empty();
+
+            // Add default option
+            select.append($('<option>', {
+                value: "",
+                text: "Oktatás kiválasztása",
+                disabled: true,
+                selected: true
+            }));
+
+            // Add fetched PPT options if any
+            if (data.length > 0) {
+                $.each(data, function(index, ppt) {
+                    select.append($('<option>', { 
+                        value: ppt.id,
+                        text: ppt.filename 
+                    }));
+                });
+            }
+
+            // Always show the container and buttons, regardless of results
+            $('#deletablePptContainer').show();
+            $('#deletePptButton').show();
+            $('#cancelDeleteButton').show();
+            $('#showDeletablePpts').hide(); // Hide the button after clicking
+        });
+    });
+
+    $('#cancelDeleteButton').click(function() {
+        $('#deletablePptContainer').hide();
+        $('#deletePptButton').hide();
+        $('#cancelDeleteButton').hide();
+        $('#showDeletablePpts').show(); // Show the button again when cancel is clicked
+    });
+
+    $('#deletePptForm').submit(function(event) {
+        var selectedPptId = $('#deletablePptSelect').val();
+        if (!selectedPptId) {
+            alert('Kérlek válassz egy törölhető oktatást');
+            event.preventDefault();
+        }
+    });
+
+    // Handle edit button click
+    $('.editTypeButton').click(function() {
+        var row = $(this).closest('tr');
+        var typeName = row.find('td:eq(0)').text().trim();
+        var typeValid = row.find('td:eq(1)').text().trim();
+        var typeId = $(this).data('id');
+
+        $('#editTypeId').val(typeId);
+        $('#editTypeName').val(typeName);
+        $('#editTypeValid').val(typeValid);
+
+        $('#editTypeModal').modal('show');
+    });
+
+    $('#pptTable').DataTable({
+        paging: true,
+        info: true,
+        searching: true,
+        ordering: true,
+        autoWidth: false,
+        bJQueryUI: true,
+        order: [], // Disable initial sorting
+        columnDefs: [
+            {
+                targets: 0, // Index of the ID column (first column)
+                visible: false, // Hide the ID column
+                searchable: false // Prevent searching on the ID column
+            }
+        ],
+        language: {
+            sEmptyTable: "Nincs rendelkezésre álló adat",
+            sInfo: "Találatok: _START_ - _END_ Összesen: _TOTAL_",
+            sInfoEmpty: "Nulla találat",
+            sInfoFiltered: "(_MAX_ összes rekord közül szűrve)",
+            sInfoPostFix: "",
+            sInfoThousands: ".",
+            sLengthMenu: "_MENU_ találat oldalanként",
+            sLoadingRecords: "Betöltés...",
+            sProcessing: "Feldolgozás...",
+            sSearch: "Keresés:",
+            sZeroRecords: "Nincs a keresésnek megfelelő találat",
+            oPaginate: {
+                sFirst: "Első",
+                sPrevious: "Előző",
+                sNext: "Következő",
+                sLast: "Utolsó"
+            },
+            oAria: {
+                sSortAscending: ": aktiválja a növekvő rendezéshez",
+                sSortDescending: ": aktiválja a csökkenő rendezéshez"
+            }
+        }
+    });
+
+
+
+    $('#typeTable').DataTable({
+        paging: false,
+        info: false,
+        searching: false,
+        ordering: true,
+        autoWidth: false,
+        bJQueryUI: true,
+        order: [] // Disable initial sorting
+    });
+
+
+    // Display notification if there are messages
+    var successMessage = /*[[${successMessage != null}]]*/ false;
+    var errorMessage = /*[[${errorMessage != null}]]*/ false;
+    if (successMessage) {
+        $('#notification').addClass('alert-success').removeClass('alert-danger').show();
+        $('#notification-message').text(/*[[${successMessage}]]*/ '');
+    } else if (errorMessage) {
+        $('#notification').addClass('alert-danger').removeClass('alert-success').show();
+        $('#notification-message').text(/*[[${errorMessage}]]*/ '');
+    }
+
+    // Add form submission validation for pptForm
+    document.getElementById('pptForm').addEventListener('submit', function(event) {
+        var nameInput = document.getElementById('name');
+        var nameValue = nameInput.value.trim();
+        var fileInput = document.getElementById('file');
+        var filePath = fileInput.value;
+        var allowedExtensions = /(\.ppt|\.pptx)$/i;
+
+        if (nameValue.replace(/\s/g, '').length < 3) {
+            alert('Az oktatás névnek legalább 3 karakterből kell állnia, szóközök nem számítanak bele');
+            event.preventDefault();
+            return false;
+        }
+
+        if (!allowedExtensions.exec(filePath)) {
+            alert('Csak .ppt és .pptx kiterjesztésű fájlok engedélyezettek');
+            fileInput.value = '';
+            event.preventDefault();
+            return false;
+        }
+
+        return true;
+    });
+
+    // Add form submission validation for modifyPptForm
+    document.getElementById('modifyPptForm').addEventListener('submit', function(event) {
+        var nameInput = document.getElementById('modifyPptName');
+        var nameValue = nameInput.value.trim();
+
+        // Check if the trimmed input has at least 3 non-space characters
+        if (nameValue.replace(/\s/g, '').length < 3) {
+            event.preventDefault(); // Prevent form submission
+            alert("Az oktatás névnek legalább 3 karakterből kell állnia, szóközök nem számítanak bele");
+        }
+    });
+
+    // Add form submission validation for addTypeForm and editTypeForm
+    function validateTypeForm(event, nameInputId) {
+        var nameInput = document.getElementById(nameInputId);
+        var nameValue = nameInput.value.trim();
+
+        if (nameValue.replace(/\s/g, '').length < 3) {
+            event.preventDefault(); // Prevent form submission
+            alert("Az típus névnek legalább 3 karakterből kell állnia, szóközök nem számítanak bele");
+        }
+    }
+
+    document.getElementById('addTypeForm').addEventListener('submit', function(event) {
+        validateTypeForm(event, 'typeName');
+    });
+
+    document.getElementById('editTypeForm').addEventListener('submit', function(event) {
+        validateTypeForm(event, 'editTypeName');
+    });
+
+    // Handle modifyPptButton click
+    $('.modifyPptButton').click(function() {
+        var pptId = $(this).attr('data-id');
+
+        // Make an AJAX request to fetch the PPT details
+        $.ajax({
+            url: '/admin/getPptDetails',
+            type: 'GET',
+            data: { pptId: pptId },
+            success: function(data) {
+                // Populate the modal fields with the fetched data
+                $('#modifyPptId').val(data.id);
+                $('#modifyPptName').val(data.filename);
+                
+                // Set the selected option for language
+                $('#modifyLanguageCode option').each(function() {
+                    if ($(this).text() === data.languageName) {
+                        $(this).prop('selected', true);
+                    }
+                });
+                
+                // Set the selected option for type
+                $('#modifyTypeId option').each(function() {
+                    if ($(this).text() === data.typeName) {
+                        $(this).prop('selected', true);
+                    }
+                });
+                
+                // Show the modal
+                $('#modifyPptModal').modal('show');
+            },
+            error: function() {
+                alert('Failed to fetch PPT details.');
+            }
+        });
+    });
+
+    // Set PPT session
+    window.setPptSession = function(pptId) {
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
         var csrfParam = $('meta[name="csrf-param"]').attr('content');
 
@@ -39,243 +801,61 @@
 
         $('body').append(form);
         form.submit();
+    };
+
+    // Functions for navigating PPT images
+    var images = [];
+    var currentIndex = 0;
+
+    function updateButtons() {
+        document.getElementById('previousButton').disabled = currentIndex === 0;
+        document.getElementById('nextButton').disabled = currentIndex === images.length - 1;
     }
 
-        var images = [];
-        var currentImageIndex = 0;
-
-        function showPptImagesModal(pptId) {
-            $.getJSON('/admin/getPptImages', { pptId: pptId }, function(data) {
+    window.openPptModal = function(pptId) {
+        $.ajax({
+            url: '/admin/getPptImages',
+            type: 'GET',
+            data: { pptId: pptId },
+            success: function (data) {
                 images = data;
+                currentIndex = 0;
                 if (images.length > 0) {
-                    currentImageIndex = 0;
-                    showImage(currentImageIndex);
-                    $('#pptModal').modal('show');
-                } else {
-                    alert('No images found for this PPT.');
+                    document.getElementById('pptImage').src = 'data:image/jpeg;base64,' + images[currentIndex];
                 }
-            }).fail(function(jqXHR, textStatus, errorThrown) {
-                alert('Error fetching images: ' + textStatus + ' ' + errorThrown);
-            });
-        }
-
-        function showImage(index) {
-            currentImageIndex = index;
-            var base64Image = images[index];
-            if (base64Image) {
-                document.getElementById('pptImage').src = 'data:image/png;base64,' + base64Image;
+                updateButtons();
+                $('#pptModal').modal('show');
+            },
+            error: function () {
+                alert('Hiba a képek betöltése közben');
             }
-            document.getElementById('previousButton').disabled = index == 0;
-            document.getElementById('nextButton').disabled = index == images.length - 1;
-        }
-
-        function nextImage() {
-            if (currentImageIndex < images.length - 1) {
-                showImage(currentImageIndex + 1);
-            }
-        }
-
-        function previousImage() {
-            if (currentImageIndex > 0) {
-                showImage(currentImageIndex - 1);
-            }
-        }
-
-        $(document).ready(function() {
-            $('#showDeletablePpts').click(function() {
-                $.getJSON('/admin/deletablePpts', function(data) {
-                    var select = $('#deletablePptSelect');
-                    select.empty();
-                    if (data.length > 0) {
-                        $.each(data, function(index, ppt) {
-                            select.append($('<option>', { 
-                                value: ppt.id,
-                                text : ppt.filename 
-                            }));
-                        });
-                        $('#deletablePptContainer').show();
-                        $('#deletePptButton').show();
-                    } else {
-                        alert('No deletable PPTs found');
-                        $('#deletablePptContainer').hide();
-                        $('#deletePptButton').hide();
-                    }
-                });
-            });
-
-            $('#deletePptButton').click(function() {
-                var selectedPptId = $('#deletablePptSelect').val();
-                if (selectedPptId) {
-                    $.ajax({
-                        url: '/admin/deletePpt/' + selectedPptId,
-                        type: 'POST',
-                        data: {
-                            _method: 'DELETE'
-                        },
-                        success: function(response) {
-                            alert('PPT deleted successfully');
-                            window.location.reload();
-                        },
-                        error: function(error) {
-                            alert('Error deleting PPT');
-                        }
-                    });
-                } else {
-                    alert('Please select a PPT to delete.');
-                }
-            });
         });
-        function togglePptDropdown() {
-            $('#pptDropdown').toggleClass('d-none');
+    };
+
+    window.previousImage = function() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            document.getElementById('pptImage').src = 'data:image/jpeg;base64,' + images[currentIndex];
         }
+        updateButtons();
+    };
 
-        function changePpt() {
-            var selectedPptId = $('#pptSelect').val();
-            setPptSession(selectedPptId);
-            togglePptDropdown();
+    window.nextImage = function() {
+        if (currentIndex < images.length - 1) {
+            currentIndex++;
+            document.getElementById('pptImage').src = 'data:image/jpeg;base64,' + images[currentIndex];
         }
-
-        $('#changePptButton').click(function() {
-            togglePptDropdown();
-        });
-      
-        $(document).ready(function() {
-            $('#toggleChangeButton').click(function() {
-                $('#changePptForm').toggleClass('d-none');
-                $(this).toggleClass('d-none');
-            });
-        });
-
-    </script>
-</head>
-<body>
-     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
-        <a class="navbar-brand" th:href="@{/admin}">Kezdőlap</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/admin/data}">Adatok</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/admin/ppt}">Oktatás</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/admin/positions}">Pozíciók</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/admin/company}">Cégek</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/admin/receiver}">Fogadó felek</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/admin/dataupload}">Adat feltöltés</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-   <div class="card mb-3">
-        <div class="card-header">
-            <h2>Current PPT</h2>
-            <span class="small" th:text="${activePpts.size() > 0 ? 'Active PPTs: ' + activePpts.size() : 'No active PPTs'}"></span>
-        </div>
-        <div class="card-body">
-            <button id="toggleChangeButton" class="btn btn-primary">Change</button>
-            <form id="changePptForm" th:action="@{/admin/changeActivePpt}" method="post" class="form-inline d-none">
-                <div class="form-group mr-2">
-                    <select name="pptIds" class="form-control" multiple>
-                        <option th:each="ppt : ${allPpts}" th:value="${ppt.id}"
-                                th:selected="${ppt.isActive}" th:text="${ppt.filename}">
-                        </option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Change</button>
-            </form>
-        </div>
-    </div>
-
-    <div class="card mb-3">
-        <div class="card-header">
-            <h2>Add PPT</h2>
-        </div>
-        <div class="card-body">
-            <form th:action="@{/admin/new}" method="get">
-                <button type="submit" class="btn btn-success">Add New PPT</button>
-            </form>
-        </div>
-    </div>
-    
-    <div class="card mb-3">
-        <div class="card-header">
-            <h2>All PPTs</h2>
-        </div>
-<div class="card-body">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="ppt : ${allPpts}">
-                <td th:text="${ppt.id}"></td>
-                <td th:text="${ppt.filename}"></td>
-                <td>
-                    <button type="button" class="btn btn-info btn-sm" 
-                            th:onclick="'showPptImagesModal(' + ${ppt.id} + ')'">View</button>
-                    <button type="button" class="btn btn-warning btn-sm" 
-                            th:onclick="'setPptSession(' + ${ppt.id} + ')'">Questions</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+        updateButtons();
+    };
+});
+</script>
 
 
-    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-    <div class="card mb-3">
-        <div class="card-header">
-            <h2>Delete PPT</h2>
-        </div>
-        <div class="card-body">
-            <button id="showDeletablePpts" class="btn btn-danger mb-2">Show Deletable PPTs</button>
-            <div id="deletablePptContainer" style="display: none;">
-                <div class="form-group">
-                    <select id="deletablePptSelect" class="form-control"></select>
-                </div>
-                <button id="deletePptButton" class="btn btn-danger" style="display: none;">Delete</button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="pptModal" tabindex="-1" aria-labelledby="pptModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="pptModalLabel">PPT Images</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <button id="previousButton" class="btn btn-secondary" onclick="previousImage()">Previous</button>
-                    <img id="pptImage" class="img-fluid mx-auto d-block" />
-                    <button id="nextButton" class="btn btn-secondary" onclick="nextImage()">Next</button>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+
+        	
+
 
 </body>
 </html>

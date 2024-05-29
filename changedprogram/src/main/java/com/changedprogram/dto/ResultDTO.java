@@ -9,17 +9,21 @@ public class ResultDTO {
     private boolean notificationSent;
     private Date valid;
     private String pptName;
+    private String languageName;
+    private String typeName;
 
     private String signature; // New field for the encrypted signature
 
-    // Constructor
-    public ResultDTO(Long id, Date filled, boolean notificationSent, Date valid, String pptName, String signature) {
+    // Updated constructor
+    public ResultDTO(Long id, Date filled, boolean notificationSent, Date valid, String pptName, String signature, String languageName, String typeName) {
         this.id = id;
         this.filled = filled;
         this.notificationSent = notificationSent;
         this.valid = valid;
         this.pptName = pptName;
-        this.signature = signature; // Initialize it
+        this.signature = signature;
+        this.languageName = languageName;
+        this.typeName = typeName;
     }
 	// Getters and setters
     public Long getId() {
@@ -67,5 +71,19 @@ public class ResultDTO {
 	public void setSignature(String signature) {
 		this.signature = signature;
 	}
+    public String getLanguageName() {
+        return languageName;
+    }
 
+    public void setLanguageName(String languageName) {
+        this.languageName = languageName;
+    }
+
+    public String getTypeName() {
+        return typeName;
+    }
+
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
+    }
 }

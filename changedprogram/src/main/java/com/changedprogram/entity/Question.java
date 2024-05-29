@@ -22,7 +22,7 @@ public class Question {
     private Long id;
     
     @NotBlank(message = "Question text cannot be blank")
-    @Size(min = 4, max = 255, message = "Question text must be between 4 and 255 characters")
+    @Size(min = 3, max = 255, message = "Question text must be between 4 and 255 characters")
     private String text;
     private boolean answer;
 
@@ -62,5 +62,4 @@ public class Question {
 	public void setPpt(Ppt ppt) {
 		this.ppt = ppt;
 	}
-    
 }
