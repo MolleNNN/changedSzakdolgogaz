@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -19,54 +20,22 @@ import com.changedprogram.service.FileService;
 public class AdminDataUploadController {
 
     @Autowired
-    private FileService fileService;
-	
+    private AdminDataUploadService adminDataUploadService;
+
     @GetMapping("/admin/dataupload")
-    public String showUploadPage(Model model, @ModelAttribute("result") UploadResult result) {
-        System.out.println("After redirect, Success Counts: " + result.getSuccessCounts()); // Debugging
-        System.out.println("After redirect, Failure Counts: " + result.getFailureCounts()); // Debugging
-        model.addAttribute("result", result);
+    public String showUploadPage(Model model) {
         return "dataupload";
     }
 
-
     @PostMapping("/admin/uploadData")
-    public String uploadData(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
-        if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Please select a file to upload.");
-            return "redirect:/admin/dataupload";
-        }
-
-        // Validate file type
-        if (!isExcelFile(file)) {
-            redirectAttributes.addFlashAttribute("error", "Invalid file type. Please upload an Excel file (.xls or .xlsx).");
-            return "redirect:/admin/dataupload";
-        }
-
+    public String handleFileUpload(@RequestParam("file") MultipartFile file, RedirectAttributes redirectAttributes) {
         try {
-            UploadResult result = fileService.importDataFromExcel(file);
-            redirectAttributes.addFlashAttribute("result", result);
-            redirectAttributes.addFlashAttribute("successMessages", result.getSuccessMessages());
-            redirectAttributes.addFlashAttribute("failureMessages", result.getFailureMessages());
-            redirectAttributes.addFlashAttribute("message", "Data processed successfully!");
+            String result = adminDataUploadService.processExcelFile(file);
+            redirectAttributes.addFlashAttribute("message", result);
+            return "redirect:/admin/dataupload";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to upload data: " + e.getMessage());
-            e.printStackTrace(); // Log the exception stack trace for debugging
+            redirectAttributes.addFlashAttribute("message", "Failed to upload file: " + e.getMessage());
+            return "redirect:/admin/dataupload";
         }
-        return "redirect:/admin/dataupload";
     }
-
-    private boolean isExcelFile(MultipartFile file) {
-        String contentType = file.getContentType();
-        String fileName = file.getOriginalFilename();
-        return contentType != null && (contentType.equals("application/vnd.ms-excel") ||
-               contentType.equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) &&
-               fileName != null && (fileName.endsWith(".xls") || fileName.endsWith(".xlsx"));
-    }
-
-    
-    
-    
-    
 }
-

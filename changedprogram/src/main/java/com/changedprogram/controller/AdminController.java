@@ -1,14 +1,21 @@
 package com.changedprogram.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+
+
+
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.env.EnvironmentEndpoint;
+import org.springframework.boot.actuate.health.HealthEndpoint;
+import org.springframework.boot.actuate.info.InfoEndpoint;
+import org.springframework.boot.actuate.management.ThreadDumpEndpoint;
+import org.springframework.boot.actuate.metrics.MetricsEndpoint;
+import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
+import org.springframework.boot.actuate.web.exchanges.HttpExchange;
+import org.springframework.boot.actuate.web.exchanges.HttpExchangesEndpoint;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -37,52 +44,33 @@ import com.changedprogram.service.AdminService;
 import com.changedprogram.service.FileService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 @Controller
 public class AdminController {
 
-
-
-
     @Autowired
-    private PositionRepository positionRepository;
+    private HealthEndpoint healthEndpoint;
 
     @Autowired
-    private ReceiverRepository receiverRepository;
-    @Autowired
-    private CompanyRepository companyRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private EncryptionUtil encryptionUtil;
-    @Autowired
-    private AdminService adminService;
+    private InfoEndpoint infoEndpoint;
 
-    
+    @Autowired
+    private MetricsEndpoint metricsEndpoint;
+
+    @Autowired
+    private EnvironmentEndpoint environmentEndpoint;
+
+    @Autowired
+    private ThreadDumpEndpoint threadDumpEndpoint;
+
+    @Autowired
+    private HttpExchangesEndpoint httpExchangesEndpoint;
+
+
     @GetMapping("/admin")
-    public String adminPage(Model model) {
-        long activeUsers = userRepository.countByActive(true);
-        long inactiveUsers = userRepository.countByActive(false);
+    public String getAdminInfo(Model model) {
 
-        Map<String, Long> stats = new HashMap<>();
-        stats.put("active", activeUsers);
-        stats.put("inactive", inactiveUsers);
-
-        model.addAttribute("userStats", stats);
-
-        return "admin"; // points to src/main/resources/templates/admin.html
-    }
-    
-    @GetMapping("/admin/user-stats")
-    @ResponseBody
-    public Map<String, Long> getUserStats() {
-        long activeUsers = userRepository.countByActive(true);
-        long inactiveUsers = userRepository.countByActive(false);
-
-        Map<String, Long> stats = new HashMap<>();
-        stats.put("active", activeUsers);
-        stats.put("inactive", inactiveUsers);
-
-        return stats;
+        return "admin";
     }
     
     
@@ -91,38 +79,17 @@ public class AdminController {
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
         if (csrfToken != null) {
             model.addAttribute("_csrf", csrfToken);
+            
         }
         return "login";
     }
- 
-    @GetMapping("/admin/data")
-    public String displayUserData(@RequestParam(defaultValue = "name") String sortBy,
-                                  @RequestParam(defaultValue = "asc") String order,
-                                  Model model) {
-        List<User> users = adminService.getAllUserDataSorted(sortBy, order);
-        List<UserDTO> userDTOs = users.stream().map(user -> {
-            List<SignatureDTO> signatures = user.getResults().stream().map(result -> {
-                String decryptedSignature = null;
-                if (result.getSignature() != null) {
-                    try {
-                        byte[] decodedSignature = encryptionUtil.decodeBase64(result.getSignatureBase64());
-                        decryptedSignature = encryptionUtil.decrypt(decodedSignature);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                return new SignatureDTO(result.getPpt().getFilename(), decryptedSignature, result.getValid(), result.getFilled());
-            }).collect(Collectors.toList());
-            return new UserDTO(user, signatures, user.getBirthdate());
-        }).collect(Collectors.toList());
-        model.addAttribute("users", userDTOs);
-        model.addAttribute("sortBy", sortBy);
-        model.addAttribute("order", order);
-        return "data";
+    
+    @GetMapping("/admin/logout")
+    public String logout(HttpSession session) {
+        session.setAttribute("logoutMessage", "You have been logged out successfully.");
+        return "redirect:/logout"; // Redirect to the default Spring Security logout endpoint
     }
 
-
- 
 
 }
 

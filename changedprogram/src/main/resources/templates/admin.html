@@ -41,6 +41,13 @@
                         <a class="nav-link" th:href="@{/admin/dataupload}">Adatok feltöltése</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <form th:action="@{/logout}" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-link nav-link">Logout</button>
+                        </form>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>

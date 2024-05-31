@@ -36,6 +36,14 @@ public class Receiver {
     @JsonIgnore
     private Set<User> users;
     
+    // Default constructor
+    public Receiver() {}
+
+    // Constructor with name parameter
+    public Receiver(String name) {
+        this.name = name;
+    }
+    
 	public Long getId() {
 		return id;
 	}

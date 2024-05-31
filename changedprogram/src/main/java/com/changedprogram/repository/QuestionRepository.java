@@ -24,4 +24,8 @@ public interface QuestionRepository extends JpaRepository<Question, Long>{
     @Query("SELECT COUNT(q) > 0 FROM Question q WHERE q.ppt.id = :pptId AND q.text = :text AND q.id <> :questionId")
     boolean existsByPptIdAndTextAndNotId(@Param("pptId") Long pptId, @Param("text") String text, @Param("questionId") Long questionId);
 
+    
+    @Query("SELECT q FROM Question q ORDER BY q.text ASC")
+    List<Question> findAllQuestions();
+
 }

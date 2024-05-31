@@ -28,6 +28,13 @@ public class Company {
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<User> users;
     
+    // Default constructor
+    public Company() {}
+
+    // Constructor with name parameter
+    public Company(String name) {
+        this.name = name;
+    }
     
 	public Long getId() {
 		return id;

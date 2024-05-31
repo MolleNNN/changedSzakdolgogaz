@@ -5,17 +5,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.changedprogram.entity.Company;
 import com.changedprogram.entity.Position;
 import com.changedprogram.entity.Receiver;
+import com.changedprogram.entity.UploadResult;
 import com.changedprogram.repository.CompanyRepository;
 import com.changedprogram.repository.PositionRepository;
 import com.changedprogram.repository.ReceiverRepository;
 
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -32,50 +35,87 @@ public class AdminDataUploadService {
     @Autowired
     private ReceiverRepository receiverRepository;
 
-    
-    public void processFile(MultipartFile file) throws Exception {
-        try (InputStream inputStream = file.getInputStream();
-             Workbook workbook = new XSSFWorkbook(inputStream)) {
+    public String processExcelFile(MultipartFile file) throws Exception {
+        List<String> feedback = new ArrayList<>();
+        int successfulPositions = 0, unsuccessfulPositions = 0;
+        int successfulCompanies = 0, unsuccessfulCompanies = 0;
+        int successfulReceivers = 0, unsuccessfulReceivers = 0;
+
+        try (InputStream is = file.getInputStream(); Workbook workbook = new XSSFWorkbook(is)) {
             Sheet sheet = workbook.getSheetAt(0);
-            List<String> messages = new ArrayList<>();
-            boolean isHeader = true;
-
+            boolean isHeaderRow = true;
             for (Row row : sheet) {
-                // Skip header row
-                if (isHeader) {
-                    isHeader = false;
-                    continue;
+                if (isHeaderRow) {
+                    isHeaderRow = false;
+                    continue; // Skip header row
                 }
 
-                String companyName = row.getCell(0).getStringCellValue().trim();
-                String positionName = row.getCell(1).getStringCellValue().trim();
-                String receiverName = row.getCell(2).getStringCellValue().trim();
+                String position = getCellValue(row.getCell(0));
+                String company = getCellValue(row.getCell(1));
+                String receiver = getCellValue(row.getCell(2));
 
-                // Validate and process each cell
-                if (isValidName(companyName)) {
-                    Company company = new Company();
-                    company.setName(formatName(companyName));
-                    companyRepository.save(company);
+                // Process position
+                if (validateData(position)) {
+                    if (!positionRepository.existsByName(position)) {
+                        positionRepository.save(new Position(position));
+                        successfulPositions++;
+                        feedback.add("Position '" + position + "' was successfully added.");
+                    } else {
+                        unsuccessfulPositions++;
+                        feedback.add("Position '" + position + "' already exists in the database.");
+                    }
+                } else {
+                    unsuccessfulPositions++;
+                    feedback.add("Position '" + position + "' is invalid (must be at least 3 characters).");
                 }
-                if (isValidName(positionName)) {
-                    Position position = new Position();
-                    position.setName(formatName(positionName));
-                    positionRepository.save(position);
+
+                // Process company
+                if (validateData(company)) {
+                    if (!companyRepository.existsByName(company)) {
+                        companyRepository.save(new Company(company));
+                        successfulCompanies++;
+                        feedback.add("Company '" + company + "' was successfully added.");
+                    } else {
+                        unsuccessfulCompanies++;
+                        feedback.add("Company '" + company + "' already exists in the database.");
+                    }
+                } else {
+                    unsuccessfulCompanies++;
+                    feedback.add("Company '" + company + "' is invalid (must be at least 3 characters).");
                 }
-                if (isValidName(receiverName)) {
-                    Receiver receiver = new Receiver();
-                    receiver.setName(formatName(receiverName));
-                    receiverRepository.save(receiver);
+
+                // Process receiver
+                if (validateData(receiver)) {
+                    if (!receiverRepository.existsByName(receiver)) {
+                        receiverRepository.save(new Receiver(receiver));
+                        successfulReceivers++;
+                        feedback.add("Receiver '" + receiver + "' was successfully added.");
+                    } else {
+                        unsuccessfulReceivers++;
+                        feedback.add("Receiver '" + receiver + "' already exists in the database.");
+                    }
+                } else {
+                    unsuccessfulReceivers++;
+                    feedback.add("Receiver '" + receiver + "' is invalid (must be at least 3 characters).");
                 }
             }
         }
+
+        feedback.add("Positions - Successful: " + successfulPositions + ", Unsuccessful: " + unsuccessfulPositions);
+        feedback.add("Companies - Successful: " + successfulCompanies + ", Unsuccessful: " + unsuccessfulCompanies);
+        feedback.add("Receivers - Successful: " + successfulReceivers + ", Unsuccessful: " + unsuccessfulReceivers);
+
+        return String.join("\n", feedback);
     }
 
-    private boolean isValidName(String name) {
-        return name != null && name.length() >= 2 && name.matches("^[A-Za-zÀ-ÿ-.\\s]+$");
+    private String getCellValue(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        return cell.getStringCellValue().trim();
     }
 
-    private String formatName(String name) {
-        return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+    private boolean validateData(String data) {
+        return data != null && data.replace(" ", "").length() >= 3;
     }
 }

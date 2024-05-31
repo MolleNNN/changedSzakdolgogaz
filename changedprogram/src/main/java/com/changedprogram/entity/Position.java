@@ -33,6 +33,14 @@ public class Position {
     @JsonIgnore
     private Set<User> users;
 
+    // Default constructor
+    public Position() {}
+
+    // Constructor with name parameter
+    public Position(String name) {
+        this.name = name;
+    }
+    
 	public Long getId() {
 		return id;
 	}
