@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Bejelentkezés</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         body {
@@ -30,12 +30,12 @@
 <body>
     <div class="card login-card">
         <div class="card-header text-center">
-            <h2>Login to Admin Page</h2>
+            <h2>Bejelentkezés</h2>
         </div>
         <div class="card-body">
             <form th:action="@{/login}" method="post">
                 <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    Invalid username and password.
+                    Helytelen felhasználónév vagy jelszó
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 <div th:if="${session.logoutMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -43,11 +43,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 <div class="mb-3">
-                    <label for="username" class="form-label">User Name:</label>
+                    <label for="username" class="form-label">Felhasználónév:</label>
                     <input type="text" id="username" name="username" class="form-control" required/>
                 </div>
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password:</label>
+                    <label for="password" class="form-label">Jelszó:</label>
                     <div class="input-group">
                         <input type="password" id="password" name="password" class="form-control" required/>
                         <button type="button" class="btn btn-outline-secondary" id="togglePassword">
@@ -56,7 +56,7 @@
                     </div>
                 </div>
                 <div class="d-grid">
-                    <input type="submit" value="Sign In" class="btn btn-primary"/>
+                    <input type="submit" value="Bejelentkezés" class="btn btn-primary"/>
                 </div>
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             </form>

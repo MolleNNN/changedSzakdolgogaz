@@ -39,7 +39,7 @@ public class AdminReceiverService {
 
         Optional<Receiver> existingReceiver = receiverRepository.findByNameIgnoreCase(formattedName);
         if (existingReceiver.isPresent()) {
-            throw new IllegalArgumentException("Receiver already exists!");
+            throw new IllegalArgumentException("A fogadó fél már létezik!");
         }
 
         return receiverRepository.save(receiver);
@@ -49,11 +49,11 @@ public class AdminReceiverService {
         newName = newName.trim();
         validateReceiverName(newName);
         Receiver existingReceiver = receiverRepository.findById(receiverId)
-                .orElseThrow(() -> new IllegalArgumentException("Receiver not found, please refresh the page"));
+                .orElseThrow(() -> new IllegalArgumentException("A fogadó fél nem található, frissítsd az oldalt!"));
 
         String formattedName = formatReceiverName(newName);
         if (receiverRepository.existsByName(formattedName)) {
-            throw new IllegalArgumentException("Receiver already exists.");
+            throw new IllegalArgumentException("A fogadó fél már létezik!");
         }
 
         existingReceiver.setName(formattedName);
@@ -68,10 +68,10 @@ public class AdminReceiverService {
 
     public void deleteReceiver(Long receiverId) {
         Receiver receiver = receiverRepository.findById(receiverId)
-                .orElseThrow(() -> new IllegalArgumentException("Receiver not found, please refresh the page"));
+                .orElseThrow(() -> new IllegalArgumentException("A fogadó fél nem található, frissítsd az oldalt!"));
 
         if (!receiver.getUsers().isEmpty()) {
-            throw new IllegalArgumentException("Cannot delete receiver because it is in use, please refresh the page");
+            throw new IllegalArgumentException("A fogadó fél nem törölhető mivel használatban van!");
         }
 
         receiverRepository.delete(receiver);
@@ -92,16 +92,16 @@ public class AdminReceiverService {
 
     private void validateReceiverName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Receiver name cannot be blank.");
+            throw new IllegalArgumentException("A fogadó fél neve nem lehet üres!");
         }
 
         if (name.length() < 2 || name.length() > 255) {
-            throw new IllegalArgumentException("Receiver name must be between 2 and 255 characters.");
+            throw new IllegalArgumentException("A fogadó fél nevének 2 és 255 karakter között kell lennie");
         }
 
         Pattern pattern = Pattern.compile("^[A-Za-zÀ-ÿ-.\\s]+[A-Za-zÀ-ÿ-.\\s]*$");
         if (!pattern.matcher(name.trim()).matches()) {
-            throw new IllegalArgumentException("The name can only contain letters, hyphens, dots, and accented characters.");
+            throw new IllegalArgumentException("A név csak betűket, kötőjeleket, pontokat és ékezetes karaktereket tartalmazhat.");
         }
     }
 

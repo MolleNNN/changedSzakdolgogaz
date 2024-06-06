@@ -1,5 +1,6 @@
 package com.changedprogram.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,9 +32,11 @@ public class AdminPositionService {
 
     public List<PositionDTO> findAllPositions() {
         return positionRepository.findAll().stream()
+                .sorted(Comparator.comparing(Position::getName))
                 .map(position -> new PositionDTO(position.getId(), position.getName()))
                 .collect(Collectors.toList());
     }
+
 
     public Position addPosition(Position position) throws ConstraintViolationException {
         validatePosition(position);
@@ -42,7 +45,7 @@ public class AdminPositionService {
 
         Optional<Position> existingPosition = positionRepository.findByNameIgnoreCase(formattedName);
         if (existingPosition.isPresent()) {
-            throw new IllegalArgumentException("Position already exists!");
+            throw new IllegalArgumentException("A pozíció már létezik!");
         }
 
         return positionRepository.save(position);
@@ -52,11 +55,11 @@ public class AdminPositionService {
         newName = newName.trim();
         validatePositionName(newName);
         Position existingPosition = positionRepository.findById(positionId)
-                .orElseThrow(() -> new IllegalArgumentException("Position not found, please refresh the page"));
+                .orElseThrow(() -> new IllegalArgumentException("A pozíció nem található, frissítsd az oldalt! "));
 
         String formattedName = formatPositionName(newName);
         if (positionRepository.existsByName(formattedName)) {
-            throw new IllegalArgumentException("Position already exists.");
+            throw new IllegalArgumentException("A pozíció már létezik!");
         }
 
         existingPosition.setName(formattedName);
@@ -66,15 +69,17 @@ public class AdminPositionService {
     public List<Position> getDeletablePositions() {
         return positionRepository.findAll().stream()
                 .filter(position -> position.getUsers().isEmpty())
+                .sorted(Comparator.comparing(Position::getName))
                 .collect(Collectors.toList());
     }
 
+
     public void deletePosition(Long positionId) {
         Position position = positionRepository.findById(positionId)
-                .orElseThrow(() -> new IllegalArgumentException("Position not found, please refresh the page"));
+                .orElseThrow(() -> new IllegalArgumentException("A pozíció nem található, frissítsd az oldalt!"));
 
         if (!position.getUsers().isEmpty()) {
-            throw new IllegalArgumentException("Cannot delete position because it is in use, please refresh the page");
+            throw new IllegalArgumentException("A pozíció nem törölhető mivel használatban van!");
         }
 
         positionRepository.delete(position);
@@ -95,11 +100,11 @@ public class AdminPositionService {
 
     private void validatePositionName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Position name cannot be blank.");
+            throw new IllegalArgumentException("A pozíció neve nem lehet üres!");
         }
 
         if (name.length() < 2 || name.length() > 255) {
-            throw new IllegalArgumentException("Position name must be between 2 and 255 characters.");
+            throw new IllegalArgumentException("A pozíció nevének 2 és 255 karakter között kell lennie");
         }
 
     }

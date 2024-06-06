@@ -68,6 +68,13 @@ public class AdminPptService {
 
         pptRepository.saveAll(allPpts);
     }
+    
+    @Transactional
+    public void setAllPptsInactive() {
+        List<Ppt> allPpts = pptRepository.findAll();
+        allPpts.forEach(ppt -> ppt.setActive(false));
+        pptRepository.saveAll(allPpts);
+    }
 
     private PptDTO convertToDto(Ppt ppt) {
         PptDTO dto = new PptDTO();
@@ -99,7 +106,7 @@ public class AdminPptService {
     
     public PptDTO getPptById(Long pptId) {
         Ppt ppt = pptRepository.findById(pptId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid PPT ID: " + pptId));
+            .orElseThrow(() -> new IllegalArgumentException("Helytelen Ppt ID: " + pptId));
         
         PptDTO dto = new PptDTO();
         dto.setId(ppt.getId());
@@ -115,13 +122,13 @@ public class AdminPptService {
     @Transactional
     public void updatePpt(Long pptId, String name, String languageCode, Long typeId) {
         Ppt ppt = pptRepository.findById(pptId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid PPT ID: " + pptId));
+            .orElseThrow(() -> new IllegalArgumentException("Helytelen Ppt ID: " + pptId));
 
         ppt.setFilename(name);
         ppt.setLanguage(languageRepository.findByCode(languageCode)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid language code: " + languageCode)));
+            .orElseThrow(() -> new IllegalArgumentException("Helytelen nyelvkód: " + languageCode)));
         ppt.setType(typeRepository.findById(typeId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid type ID: " + typeId)));
+            .orElseThrow(() -> new IllegalArgumentException("Helytelen típus ID: " + typeId)));
 
         pptRepository.save(ppt);
     }

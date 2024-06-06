@@ -14,9 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
-import java.util.Optional;
 
 import javax.imageio.ImageIO;
 
@@ -72,55 +70,48 @@ public class InitService {
     
     @Transactional
     public void processFile() throws IOException, InvalidFormatException {
-        File file = new File("src/main/resources/static/default.pptx");
+        File file = new File("src/main/resources/static/alap.pptx");
         boolean isNewPptCreated = false;
+        String defaultPptName = "Alapvető oktatás"; // Define your specific default PPT name here
 
-        // Check if any PPT is marked as active
-        if (pptRepository.findByIsActiveTrue().isEmpty()) {
-            Optional<Ppt> firstPpt = pptRepository.findFirstByOrderByIdAsc();
-            if (firstPpt.isPresent()) {
-                // If there are PPTs but none are active, set the first one to active
-                Ppt ppt = firstPpt.get();
-                ppt.setActive(true);
-                pptRepository.save(ppt);
-            } else {
-                // No PPTs at all, create a new one and set it as active
-                Ppt ppt = new Ppt();
-                ppt.setFilename(file.getName());
-                ppt.setActive(true); // Set this one as active since it's the only one
-                // Set language to Hungarian by default
-                Language language = languageRepository.findByCode("hu").orElseThrow(() -> new IllegalStateException("Default language not found"));
-                ppt.setLanguage(language);
+        // Check if there are no PPTs at all, then create a new one and set it as active
+        if (pptRepository.findAll().isEmpty()) {
+            // No PPTs at all, create a new one and set it as active
+            Ppt ppt = new Ppt();
+            ppt.setFilename(defaultPptName); // Set to specific default PPT name
+            ppt.setActive(true); // Set this one as active since it's the only one
+            // Set language to Hungarian by default
+            Language language = languageRepository.findByCode("hu").orElseThrow(() -> new IllegalStateException("Default language not found"));
+            ppt.setLanguage(language);
 
-                // Set the type to 'EHS oktatás' by default
-                Type defaultType = typeRepository.findByName("EHS oktatás").orElseThrow(() -> new IllegalStateException("Default type not found"));
-                ppt.setType(defaultType);
+            // Set the type to 'EHS oktatás' by default
+            Type defaultType = typeRepository.findByName("EHS oktatás").orElseThrow(() -> new IllegalStateException("Default type not found"));
+            ppt.setType(defaultType);
 
-                ppt = pptRepository.save(ppt);
-                isNewPptCreated = true;
+            ppt = pptRepository.save(ppt);
+            isNewPptCreated = true;
 
-                // Convert PPT to images and save
-                try (FileInputStream inputStream = new FileInputStream(file)) {
-                    XMLSlideShow pptx = new XMLSlideShow(inputStream);
-                    Dimension pgsize = pptx.getPageSize();
-                    for (XSLFSlide slide : pptx.getSlides()) {
-                        BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
-                        Graphics2D graphics = img.createGraphics();
-                        // best rendering settings
-                        graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                        graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                        slide.draw(graphics);
-                        graphics.dispose();
+            // Convert PPT to images and save
+            try (FileInputStream inputStream = new FileInputStream(file)) {
+                XMLSlideShow pptx = new XMLSlideShow(inputStream);
+                Dimension pgsize = pptx.getPageSize();
+                for (XSLFSlide slide : pptx.getSlides()) {
+                    BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
+                    Graphics2D graphics = img.createGraphics();
+                    // best rendering settings
+                    graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                    slide.draw(graphics);
+                    graphics.dispose();
 
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        ImageIO.write(img, "png", baos);
-                        byte[] imageBytes = baos.toByteArray();
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ImageIO.write(img, "png", baos);
+                    byte[] imageBytes = baos.toByteArray();
 
-                        Image image = new Image();
-                        image.setImage(imageBytes);
-                        image.setPpt(ppt);
-                        imageRepository.save(image);
-                    }
+                    Image image = new Image();
+                    image.setImage(imageBytes);
+                    image.setPpt(ppt);
+                    imageRepository.save(image);
                 }
             }
         }
@@ -140,6 +131,7 @@ public class InitService {
             }
         }
     }
+
     
     private void parseSqlAndSaveQuestion(String sql, Ppt ppt) {
         try {

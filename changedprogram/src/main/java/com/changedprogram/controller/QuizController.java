@@ -61,13 +61,13 @@ public class QuizController {
             logSessionAttributes(session);
 
             if (pptId == null) {
-                model.addAttribute("message", "Presentation ID is missing from the session.");
+                model.addAttribute("message", "Hiányzik a prezentáció!");
                 return "error";
             }
 
             List<Question> questions = questionRepository.findByPptId(pptId);
             if (questions == null || questions.isEmpty()) {
-                model.addAttribute("message", "No questions available for this presentation.");
+                model.addAttribute("message", "Nincs elérhető kérdés az adott prezentációhoz!");
                 return "error";
             }
 
@@ -91,8 +91,8 @@ public class QuizController {
             session.setAttribute("attemptNumber", attemptNumber);
 
             // Create a new quiz attempt
-            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-            Ppt ppt = pptRepository.findById(pptId).orElseThrow(() -> new RuntimeException("Ppt not found"));
+            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("Felhasználó nem található"));
+            Ppt ppt = pptRepository.findById(pptId).orElseThrow(() -> new RuntimeException("Prezentáció nem található!"));
             QuizAttempt quizAttempt = quizService.logQuizAttempt(user, ppt, 0, attemptNumber); // Initially, the score is 0
             session.setAttribute("quizAttemptId", quizAttempt.getId());
 
@@ -107,7 +107,7 @@ public class QuizController {
             return "quiz";
         } catch (Exception e) {
             logger.error("Error starting quiz", e);
-            model.addAttribute("message", "An error occurred while starting the quiz. Please try again.");
+            model.addAttribute("message", "Hiba történt a kvíz indítása közben. Kérjük, próbálja meg újra.");
             return "error";
         }
     }
@@ -122,7 +122,7 @@ public class QuizController {
             logger.info("Processing next question for user ID: {}", userId);
 
             if (!isSessionValid(session)) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Session not initialized");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A munkamenet nincs inicializálva");
             }
 
             List<Question> questions = (List<Question>) session.getAttribute("questions");
@@ -130,7 +130,7 @@ public class QuizController {
             int correctAnswersCount = (Integer) session.getAttribute("correctAnswersCount");
 
             if (questions == null || currentIndex >= questions.size()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No more questions available");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Nem áll rendelkezésre több kérdés");
             }
 
             Question currentQuestion = questions.get(currentIndex);
@@ -157,7 +157,7 @@ public class QuizController {
                     quizAttemptRepository.save(quizAttempt);
                 } catch (Exception e) {
                     logger.error("Error updating quiz attempt", e);
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update quiz attempt.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Nem sikerült frissíteni a kvíz próbálkozást.");
                 }
 
                 // Determine if the user passed or failed
@@ -180,7 +180,7 @@ public class QuizController {
             }
         } catch (Exception e) {
             logger.error("Error processing question", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while processing the question. Please try again.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("A kérdés feldolgozása során hiba történt. Kérjük, próbálja meg újra.");
         }
     }
 
@@ -194,7 +194,7 @@ public class QuizController {
             logger.info("Processing quiz for user ID: {} and PPT ID: {}", userId, pptId);
 
             if (userId == null || pptId == null || quizAttemptId == null) {
-                redirectAttributes.addFlashAttribute("error", "Session data missing.");
+                redirectAttributes.addFlashAttribute("error", "A munkamenet adatai hiányoznak.");
                 return "redirect:/error";
             }
 
@@ -202,7 +202,7 @@ public class QuizController {
             Integer correctAnswersCount = (Integer) session.getAttribute("correctAnswersCount");
 
             if (questions == null || correctAnswersCount == null) {
-                redirectAttributes.addFlashAttribute("error", "Session data missing.");
+                redirectAttributes.addFlashAttribute("error", "A munkamenet adatai hiányoznak.");
                 return "redirect:/error";
             }
 
@@ -210,7 +210,7 @@ public class QuizController {
             boolean passed = quizService.checkQuizResults(questions, correctAnswersCount);
 
             // Update the quiz attempt with the final score
-            QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElseThrow(() -> new RuntimeException("Quiz attempt not found"));
+            QuizAttempt quizAttempt = quizAttemptRepository.findById(quizAttemptId).orElseThrow(() -> new RuntimeException("Kvízkísérlet nem található"));
             quizAttempt.setPercentage((int) scorePercentage); // Save percentage
             quizAttemptRepository.save(quizAttempt);
 
@@ -222,7 +222,7 @@ public class QuizController {
             return "redirect:/summarize";
         } catch (Exception e) {
             logger.error("Error processing quiz", e);
-            redirectAttributes.addFlashAttribute("error", "An error occurred while processing the quiz. Please try again.");
+            redirectAttributes.addFlashAttribute("error", "Hiba történt a kvíz feldolgozása során. Kérjük, próbálja meg újra.");
             return "redirect:/error";
         }
     }
@@ -248,7 +248,7 @@ public class QuizController {
             return "summarize";
         } catch (Exception e) {
             logger.error("Error summarizing quiz", e);
-            model.addAttribute("message", "An error occurred while summarizing the quiz. Please try again.");
+            model.addAttribute("message", "Hiba történt a kvíz összegzése közben. Kérjük, próbálja meg újra.");
             return "error";
         }
     }

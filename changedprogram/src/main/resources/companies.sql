@@ -1,5 +1,10 @@
-INSERT INTO companies (name) VALUES ('Tech Solutions Inc.');
-INSERT INTO companies (name) VALUES ('Finance Experts LLC');
-INSERT INTO companies (name) VALUES ('HR Solutions Ltd');
-INSERT INTO companies (name) VALUES ('Innovative Designs Co.');
-INSERT INTO companies (name) VALUES ('Global Enterprises');
+INSERT INTO Company (name) VALUES ('Tech Megoldások Kft.');
+INSERT INTO Company (name) VALUES ('Pénzügyi Szakértők Kft.');
+INSERT INTO Company (name) VALUES ('HR Megoldások Kft.');
+INSERT INTO Company (name) VALUES ('Innovatív Tervezések Kft.');
+INSERT INTO Company (name) VALUES ('Globális Vállalkozások Zrt.');
+INSERT INTO Company (name) VALUES ('Mérnöki Szolgáltatások Kft.');
+INSERT INTO Company (name) VALUES ('Digitális Innovációk Kft.');
+INSERT INTO Company (name) VALUES ('Zöld Energia Kft.');
+INSERT INTO Company (name) VALUES ('Építőipari Megoldások Zrt.');
+INSERT INTO Company (name) VALUES ('Kreatív Marketing Kft.');

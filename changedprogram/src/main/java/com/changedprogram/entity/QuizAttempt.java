@@ -16,7 +16,7 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "quiz_attempt")
+@Table(name = "QuizAttempt")
 public class QuizAttempt {
 
     @Id

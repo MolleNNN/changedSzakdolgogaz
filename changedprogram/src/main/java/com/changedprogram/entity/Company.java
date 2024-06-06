@@ -14,15 +14,15 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "companies")
+@Table(name = "Company")
 public class Company {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Company name cannot be blank")
-    @Size(min = 2, max = 255, message = "Company name must be between 2 and 255 characters")
+    @NotBlank(message = "Nem lehet üres mező")
+    @Size(min = 2, max = 255, message = "2 és 255 karakter között kell lennie")
     private String name;
    
     @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -56,6 +56,4 @@ public class Company {
     public void setUsers(Set<User> users) {
         this.users = users;
     }
-    
-    
 }

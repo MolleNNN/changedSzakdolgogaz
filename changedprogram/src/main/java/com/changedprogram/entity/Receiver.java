@@ -16,19 +16,19 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "receivers")
+@Table(name = "Receiver")
 public class Receiver {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Receiver name cannot be blank")
-    @Size(min = 2, max = 255, message = "Position name must be between 2 and 255 characters")
+    @NotBlank(message = "Nem lehet üres mező")
+    @Size(min = 2, max = 255, message = "2 és 255 karakter között kell lennie")
     @Pattern(
-        regexp = "^[A-Za-zÀ-ÿ-.\\s]+[A-Za-zÀ-ÿ-.\\s]*$", 
-        message = "Receiver name can contain alphabets, hyphens, periods, and Hungarian characters only"
-    )
+    	    regexp = "^[A-Za-zÀ-ÖØ-öø-ÿÁÉÍÓÖŐÚÜŰáéíóöőúüű\\-\\.\\s\\(\\)]+$", 
+    	    message = "A név csak betűt, kötőjelet, pontot és zárójeleket tartalmazhat"
+    	)
     @Column(name = "name", unique = true)
     private String name;
     

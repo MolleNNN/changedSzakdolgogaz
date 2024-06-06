@@ -63,11 +63,11 @@ public class UserService {
         user.setPhoneNumber(userForm.getPhoneNumber());
         user.setTaxNumber(userForm.getTaxNumber());
         user.setPosition(positionRepository.findById(userForm.getPositionId())
-                                           .orElseThrow(() -> new IllegalArgumentException("Invalid Position ID")));
+                                           .orElseThrow(() -> new IllegalArgumentException("Helytelen pozíció ID")));
         user.setReceiver(receiverRepository.findById(userForm.getReceiverId())
-                                           .orElseThrow(() -> new IllegalArgumentException("Invalid Receiver ID")));
+                                           .orElseThrow(() -> new IllegalArgumentException("Helytelen fogadó fél ID")));
         user.setCompany(companyRepository.findById(userForm.getCompanyId())
-                                         .orElseThrow(() -> new IllegalArgumentException("Invalid Company ID")));
+                                         .orElseThrow(() -> new IllegalArgumentException("Helytelen cég ID")));
         user.setActive(true);
 
         user = userRepository.save(user);

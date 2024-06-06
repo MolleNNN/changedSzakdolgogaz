@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.changedprogram.EncryptionUtil;
+import com.changedprogram.component.EncryptionUtil;
 import com.changedprogram.entity.Ppt;
 import com.changedprogram.entity.Result;
 import com.changedprogram.entity.Type;
@@ -40,8 +40,8 @@ public class SignatureService {
         Result result = resultRepository.findByUserIdAndPptId(userId, pptId)
             .orElseGet(() -> {
                 Result newResult = new Result();
-                newResult.setUser(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found")));
-                newResult.setPpt(pptRepository.findById(pptId).orElseThrow(() -> new IllegalArgumentException("PPT not found")));
+                newResult.setUser(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Felhasználó nem található")));
+                newResult.setPpt(pptRepository.findById(pptId).orElseThrow(() -> new IllegalArgumentException("Ppt nem található")));
                 newResult.setFilled(new Date());
                 newResult.setNotificationSent(false);
                 return newResult;
@@ -67,8 +67,8 @@ public class SignatureService {
             resultRepository.save(result);
             return "redirect:/completion";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error processing signature.");
-            System.err.println("Error processing signature: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Hiba az aláírás feldolgozása közben");
+            System.err.println("Hiba az aláírás feldolgozása közben: " + e.getMessage());
             return "redirect:/error";
         }
     }

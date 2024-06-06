@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Red Navbar</title>
+    <title>Kezdőlap</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/nav.css}"> <!-- Link to custom CSS -->
 </head>
@@ -44,7 +44,7 @@
                 <ul class="navbar-nav">
                     <li class="nav-item">
                         <form th:action="@{/logout}" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-link nav-link">Logout</button>
+                            <button type="submit" class="btn btn-link nav-link">Kijelentkezés</button>
                         </form>
                     </li>
                 </ul>
@@ -56,8 +56,8 @@
     <script th:src="@{/webjars/bootstrap/5.3.0/js/bootstrap.bundle.min.js}"></script>
     <!-- Your page content here -->
     <div class="container mt-5">
-        <h1>Welcome to the Admin Panel</h1>
-        <p>This is your base page content.</p>
+        <h1>Üdvözöllek az admin felületen!</h1>
+ 
     </div>
 
 </body>

@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <title th:text="${ppt.filename}">Active Presentation</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
     <style>
         body, html {
             width: 100%;
@@ -17,6 +15,28 @@
             justify-content: center;
             background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
         }
+        .loading-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f0f8ff, #add8e6 30%, #f0fff0 60%, #add8e6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .spinner {
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #3498db;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         .main-container {
             max-width: 90%;
             max-height: 90%;
@@ -26,11 +46,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-        .slick-slide img {
-            width: 100%;
-            height: auto;
-            border-radius: 15px; /* Round the corners of the image */
+            display: none; /* Initially hidden */
         }
         .navigation-container {
             position: relative;
@@ -41,7 +57,7 @@
             display: flex;
             justify-content: space-between;
             position: absolute;
-            bottom: 20px;
+            bottom: 30px; /* Move the buttons up */
             left: 0;
             right: 0;
             padding: 0 10px;
@@ -54,6 +70,7 @@
             color: white;
             font-weight: bold;
             font-size: 18px;
+            background-color: #333; /* Default background color to indicate clickable */
             transition: background-color 0.6s ease;
             border-radius: 50%;
             user-select: none;
@@ -66,6 +83,7 @@
         .disabled {
             pointer-events: none;
             opacity: 0.5;
+            background-color: #333; /* Ensure disabled buttons also have the default background color */
         }
         #quiz-button {
             display: none;
@@ -79,21 +97,28 @@
             overflow: hidden;
             margin-top: 5px; /* Adjust distance below the slider */
         }
-        #progress-bar {
-            height: 100%;
-            background-color: blue;
-            width: 0%;
-        }
+#progress-bar {
+    height: 100%;
+    background-color: blue;
+    width: 0%;
+    transition: width 0.5s ease; /* Add transition for smooth width change */
+}
         #countdown {
             font-size: 24px;
             font-weight: bold;
             position: absolute;
-            top: -5px; /* Adjust to place above the image */
+            top: 10px; /* Adjust to place lower */
             right: 10px; /* Margin from the right edge */
             margin: 0;
             padding: 0;
             z-index: 1000;
-            background: none;
+            background: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            text-align: center;
+            color: black;
         }
         .slider-container {
             position: relative;
@@ -113,6 +138,9 @@
         .slider-wrapper img {
             display: block;
             margin: 0 auto;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain; /* Ensure the image scales proportionately */
         }
         /* W3Schools Button Styles */
         .w3-button {
@@ -144,7 +172,7 @@
         }
         @media (max-width: 768px) {
             .navigation-buttons {
-                bottom: 10px;
+                bottom: 20px; /* Adjust position for smaller screens */
             }
             .prev, .next {
                 padding: 8px;
@@ -152,21 +180,29 @@
             }
             #countdown {
                 font-size: 18px;
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
             }
         }
+        .container {
+    max-width: 985px;
+    max-height: 557px;
+    width: 100%;
+    height: 100%;
+}
     </style>
 </head>
 <body>
+    <div class="loading-screen">
+        <div class="spinner"></div>
+    </div>
     <div class="main-container">
         <div class="container">
             <div class="slider-container">
                 <div id="countdown"></div>
                 <div class="slider-wrapper">
-                    <div class="slider">
-                        <div th:each="image : ${images}">
-                            <img th:src="'data:image/png;base64,' + ${image}" alt="Presentation Image"/>
-                        </div>
-                    </div>
+                    <img id="slide-image" src="" alt="Presentation Image"/>
                 </div>
                 <div id="progress-bar-container">
                     <div id="progress-bar"></div>
@@ -178,30 +214,30 @@
                     <a class="w3-button w3-right next disabled">&#10095;</a>
                 </div>
             </div>
-            <a th:href="@{/quiz}" class="btn btn-success" id="quiz-button">Go to Quiz</a>
+            <a th:href="@{/quiz}" class="btn btn-success" id="quiz-button">Kvíz kitöltése</a>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
         $(document).ready(function() {
             console.log("Document ready");
-            var $slider = $('.slider');
+            var images = /*[[${images}]]*/ []; // Fetch the image list from the Thymeleaf context
+            var currentSlide = 0;
+            var $slideImage = $('#slide-image');
             var $progressBar = $('#progress-bar');
             var $countdown = $('#countdown');
             var $prevButton = $('.prev');
             var $nextButton = $('.next');
             var countdownInterval;
             var countdownDuration = 5; // Countdown duration in seconds
-            var isBackNavigation = false; // Flag to track if the navigation is back
             var presentationCompleted = false; // Flag to track if the presentation is completed
 
             function startCountdown(callback) {
                 console.log("Starting countdown");
                 var countdown = countdownDuration;
-                $countdown.text(countdown);
+                $countdown.text(countdown).show(); // Show the countdown
                 $prevButton.addClass('disabled');
                 $nextButton.addClass('disabled');
 
@@ -211,85 +247,74 @@
                     $countdown.text(countdown);
                     if (countdown <= 0) {
                         clearInterval(countdownInterval);
-                        $countdown.text('');
+                        $countdown.text('').hide(); // Hide the countdown
                         $prevButton.removeClass('disabled');
                         $nextButton.removeClass('disabled');
                         callback();
+                        if (currentSlide === images.length - 1) {
+                            presentationCompleted = true; // Mark presentation as completed when last slide is reached
+                            $('#quiz-button').show(); // Display the quiz button after countdown completes on last slide
+                        }
                     }
                 }, 1000);
             }
 
-            function updateButtonVisibility(currentSlide, totalSlides) {
-                console.log("Updating button visibility: currentSlide=" + currentSlide + ", totalSlides=" + totalSlides);
+            function updateButtonVisibility() {
+                console.log("Updating button visibility: currentSlide=" + currentSlide + ", totalSlides=" + images.length);
                 $prevButton.toggleClass('disabled', currentSlide <= 0);
-                $nextButton.toggleClass('disabled', currentSlide >= totalSlides - 1);
+                $nextButton.toggleClass('disabled', currentSlide >= images.length - 1);
             }
 
-            function updateProgressBar(currentSlide, totalSlides) {
-                var progressPercentage = ((currentSlide + 1) / totalSlides) * 100;
+            function updateProgressBar() {
+                var progressPercentage = ((currentSlide + 1) / images.length) * 100;
                 console.log("Updating progress bar: " + progressPercentage + "%");
                 $progressBar.css('width', progressPercentage + '%');
             }
 
-            $slider.slick({
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                arrows: false,
-                adaptiveHeight: true,
-                swipe: false,
-                draggable: false
-            });
-
-            $slider.on('afterChange', function(event, slick, currentSlide) {
-                console.log("After change: currentSlide=" + currentSlide);
-                var totalSlides = slick.slideCount;
-                updateProgressBar(currentSlide, totalSlides);
-
-                if (currentSlide === totalSlides - 1) {
-                    presentationCompleted = true; // Mark presentation as completed when last slide is reached
-                    $('#quiz-button').show();
-                } else {
-                    $('#quiz-button').hide();
-                }
-
-                if (!presentationCompleted && !isBackNavigation) {
+            function showSlide(index) {
+                $slideImage.attr('src', 'data:image/png;base64,' + images[index]);
+                updateProgressBar();
+                if (!presentationCompleted) {
                     startCountdown(function() {
-                        updateButtonVisibility(currentSlide, totalSlides);
+                        updateButtonVisibility();
                     });
                 } else {
-                    updateButtonVisibility(currentSlide, totalSlides);
-                    isBackNavigation = false; // Reset flag after handling back navigation
+                    updateButtonVisibility();
                 }
-            });
+            }
 
-            $slider.on('init', function(event, slick) {
-                console.log("Slider initialized");
-                var currentSlide = slick.currentSlide;
-                var totalSlides = slick.slideCount;
-                updateProgressBar(currentSlide, totalSlides);
-                startCountdown(function() {
-                    updateButtonVisibility(currentSlide, totalSlides);
-                });
-            });
+            function preloadFirstImage() {
+                var firstImage = new Image();
+                firstImage.onload = function() {
+                    $slideImage.attr('src', this.src);
+                    showSlide(currentSlide);
+                };
+                firstImage.src = 'data:image/png;base64,' + images[0];
+            }
 
             $prevButton.on('click', function() {
                 console.log("Previous button clicked");
-                if (!$prevButton.hasClass('disabled')) {
-                    isBackNavigation = true; // Set flag to indicate back navigation
-                    $slider.slick('slickPrev');
+                if (!$prevButton.hasClass('disabled') && currentSlide > 0) {
+                    currentSlide--;
+                    showSlide(currentSlide);
                 }
             });
 
             $nextButton.on('click', function() {
                 console.log("Next button clicked");
-                if (!$nextButton.hasClass('disabled')) {
-                    isBackNavigation = false; // Set flag to indicate forward navigation
-                    $slider.slick('slickNext');
+                if (!$nextButton.hasClass('disabled') && currentSlide < images.length - 1) {
+                    currentSlide++;
+                    showSlide(currentSlide);
                 }
             });
 
-            // Trigger slick initialization manually
-            $slider.slick('slickGoTo', 0);
+            // Initial setup
+            preloadFirstImage();
+
+            setTimeout(function() {
+                $('.loading-screen').hide();
+                $('.main-container').show();
+            }, 1500);
         });
         /*]]>*/
     </script>

@@ -128,7 +128,7 @@ public class UserController {
     }
     
     @GetMapping("/options")
-    public String showAvailablePresentations(Model model, HttpSession session) {
+    public String showAvailablePresentations(Model model, HttpSession session, HttpServletRequest request) {
         try {
             String language = (String) session.getAttribute("sessionLanguage");
             Long userId = (Long) session.getAttribute("userId");
@@ -141,20 +141,27 @@ public class UserController {
             }
 
             List<Ppt> activePresentations = userService.getActivePresentationsByLanguage(language);
+
             logger.debug("Active presentations found: {}", activePresentations.size());
+
             if (activePresentations.isEmpty()) {
-                model.addAttribute("message", messageSource.getMessage("options.message.noTraining", null, localeResolver.resolveLocale(null)));
+                String noTrainingMessage = messageSource.getMessage("options.message.noTraining", null, localeResolver.resolveLocale(request));
+                model.addAttribute("message", noTrainingMessage);
             } else {
                 model.addAttribute("presentations", activePresentations);
             }
+
             logSessionAttributes(session);
             return "options";
         } catch (Exception e) {
             logger.error("Error occurred while showing available presentations: ", e);
-            model.addAttribute("errorMessage", messageSource.getMessage("error.unexpected", null, localeResolver.resolveLocale(null)));
+            String unexpectedErrorMessage = messageSource.getMessage("error.unexpected", null, localeResolver.resolveLocale(request));
+            model.addAttribute("errorMessage", unexpectedErrorMessage);
             return "error";
         }
     }
+
+
 
     @PostMapping("/presentation")
     public String showPresentation(@RequestParam("pptId") Long pptId, Model model, HttpSession session) {

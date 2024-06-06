@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.changedprogram.EncryptionUtil;
+import com.changedprogram.component.EncryptionUtil;
 import com.changedprogram.dto.ResultDTO;
 import com.changedprogram.dto.UserrDTO;
 import com.changedprogram.entity.Company;
@@ -98,7 +98,7 @@ public class AdminDataService {
 
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid User ID: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("Hibás user ID: " + userId));
     }
 
     public boolean isDuplicateTaxNumber(User userFormData) {
@@ -109,7 +109,7 @@ public class AdminDataService {
 
     public void updateUser(User userFormData) {
         User existingUser = userRepository.findById(userFormData.getId())
-                                          .orElseThrow(() -> new RuntimeException("User not found"));
+                                          .orElseThrow(() -> new RuntimeException("Felhasználó nem található"));
 
         // Format name to capitalize the first letter of each word
         String formattedName = capitalizeWords(userFormData.getName());

@@ -14,7 +14,14 @@ public class NameValidator implements ConstraintValidator<ValidName, String> {
 
     @Override
     public boolean isValid(String name, ConstraintValidatorContext context) {
-        if (name == null || name.trim().isEmpty()) {
+        if (name == null) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("{error.adduser.name}")
+                   .addConstraintViolation();
+            return false;
+        }
+
+        if (name.trim().isEmpty()) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("{error.adduser.name}")
                    .addConstraintViolation();

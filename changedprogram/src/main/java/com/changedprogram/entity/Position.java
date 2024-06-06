@@ -17,15 +17,15 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 @Entity
-@Table(name = "positions")
+@Table(name = "Position")
 public class Position {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Position name cannot be blank")
-    @Size(min = 2, max = 255, message = "Position name must be between 2 and 255 characters")
+    @NotBlank(message = "Nem lehet üres mező")
+    @Size(min = 2, max = 255, message = "2 és 255 karakter között kell lennie")
     @Column(name = "name")
     private String name;
 

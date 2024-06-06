@@ -14,9 +14,16 @@ public class EmailValidator implements ConstraintValidator<ValidEmail, String> {
 
     @Override
     public boolean isValid(String email, ConstraintValidatorContext context) {
-        if (email == null || email.trim().isEmpty()) {
+        if (email == null) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("{error.adduser.email}")
+            context.buildConstraintViolationWithTemplate("{error.adduser.emailNotNull}")
+                   .addConstraintViolation();
+            return false;
+        }
+
+        if (email.trim().isEmpty()) {
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("{error.adduser.emailNotEmpty}")
                    .addConstraintViolation();
             return false;
         }

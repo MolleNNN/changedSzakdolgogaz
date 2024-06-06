@@ -1,3 +1,10 @@
-INSERT INTO positions (name) VALUES ('IT Trainee');
-INSERT INTO positions (name) VALUES ('Finance Employee');
-INSERT INTO positions (name) VALUES ('HR Manager');
+INSERT INTO Position (name) VALUES ('IT Gyakornok');
+INSERT INTO Position (name) VALUES ('Pénzügyi Munkatárs');
+INSERT INTO Position (name) VALUES ('HR Vezető');
+INSERT INTO Position (name) VALUES ('Marketing Asszisztens');
+INSERT INTO Position (name) VALUES ('Projektmenedzser');
+INSERT INTO Position (name) VALUES ('Értékesítési Képviselő');
+INSERT INTO Position (name) VALUES ('Ügyfélszolgálati Munkatárs');
+INSERT INTO Position (name) VALUES ('Könyvelő');
+INSERT INTO Position (name) VALUES ('Fejlesztőmérnök');
+INSERT INTO Position (name) VALUES ('Üzleti Elemző');

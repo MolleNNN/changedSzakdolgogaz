@@ -25,15 +25,12 @@ public interface ResultRepository extends JpaRepository<Result, Long>{
             "JOIN FETCH r.user u " +
             "LEFT JOIN FETCH u.receiver " +
             "LEFT JOIN FETCH u.company " +
-            "WHERE r.valid <= :validDate " +
+            "LEFT JOIN FETCH r.ppt " +
+            "WHERE r.valid <= :thirtyDaysAhead " +
             "AND r.notificationSent = false " +
             "AND u.active = true")
-     List<Result> findResultsForNotification(Date validDate);
-     
-     @Query("SELECT r FROM Result r " +
-            "WHERE r.user.id = :userId " +
-            "AND r.valid > :validDate")
-     List<Result> findByUserIdAndValidAfter(Long userId, Date validDate);
+     List<Result> findResultsForNotification(@Param("thirtyDaysAhead") Date thirtyDaysAhead);
+
     
     boolean existsByPptId(Long pptId);
 }

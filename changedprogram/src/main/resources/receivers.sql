@@ -1,5 +1,10 @@
-INSERT INTO receivers (name) VALUES ('John Doe');
-INSERT INTO receivers (name) VALUES ('Jane Smith');
-INSERT INTO receivers (name) VALUES ('Alice Johnson');
-INSERT INTO receivers (name) VALUES ('Robert Brown');
-INSERT INTO receivers (name) VALUES ('Emily Davis');
+INSERT INTO Receiver (name) VALUES ('Kovács János');
+INSERT INTO Receiver (name) VALUES ('Nagy Anna');
+INSERT INTO Receiver (name) VALUES ('Tóth Péter');
+INSERT INTO Receiver (name) VALUES ('Szabó Katalin');
+INSERT INTO Receiver (name) VALUES ('Horváth László');
+INSERT INTO Receiver (name) VALUES ('Varga István');
+INSERT INTO Receiver (name) VALUES ('Kiss Éva');
+INSERT INTO Receiver (name) VALUES ('Molnár Attila');
+INSERT INTO Receiver (name) VALUES ('Farkas Andrea');
+INSERT INTO Receiver (name) VALUES ('Németh Zoltán');

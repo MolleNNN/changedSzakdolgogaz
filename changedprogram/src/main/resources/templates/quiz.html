@@ -146,8 +146,9 @@
                         </div>
                     </div>
                     <p id="questionCounter" class="mb-4">
+                        <span th:text="#{quiz.questionCounter}">Kérdés</span> 
                         <span id="currentQuestionNumber">[[${currentQuestionIndex}]]</span> 
-                        <span th:text="#{quiz.of}">of</span> 
+                        <span th:text="#{quiz.of}">/</span> 
                         [[${totalQuestions}]]
                     </p>
                     <p id="questionText" class="question-text">[[${question.text}]]</p>
@@ -157,10 +158,10 @@
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                     <input type="hidden" name="answer" id="answerInput" required>
                     <div style="width: 100%; display: flex; justify-content: space-around;">
-                        <button type="button" class="btn-answer" data-value="true" onclick="selectAnswer(true)">Igaz</button>
-                        <button type="button" class="btn-answer" data-value="false" onclick="selectAnswer(false)">Hamis</button>
+                        <button type="button" class="btn-answer" data-value="true" onclick="selectAnswer(true)" th:text="#{quiz.trueOption}">Igaz</button>
+                        <button type="button" class="btn-answer" data-value="false" onclick="selectAnswer(false)" th:text="#{quiz.falseOption}">Hamis</button>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-3" disabled>Beküldés</button>
+                    <button type="submit" class="btn btn-primary mt-3" disabled th:text="#{quiz.submit}">Beküldés</button>
                 </form>
             </div>
         </div>
@@ -209,7 +210,6 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Response data:', data); // Log the response data to see the structure and values
 
                     // Update the page with new question details
                     if (data.completed) {

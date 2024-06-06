@@ -164,6 +164,12 @@
                 <span th:text="${errorMessage}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+
+            <!-- Display no training message if no presentations are available -->
+            <div th:if="${message}" class="alert alert-info alert-dismissible fade show" role="alert">
+                <span th:text="${message}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
             
             <h1 th:text="#{options.availableTraining}">Available Training:</h1>
             <div th:if="${presentations != null}">
@@ -180,9 +186,6 @@
                         </div>
                     </li>
                 </ul>
-            </div>
-            <div th:if="${presentations == null}">
-                <p th:text="#{options.message.noTraining}">No training available.</p>
             </div>
         </div>
     </div>

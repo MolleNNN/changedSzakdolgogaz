@@ -116,11 +116,11 @@ public class FileService {
         ppt.setActive(false); // Set as inactive by default
 
         Language language = languageRepository.findByCode(languageCode)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid language code: " + languageCode));
+                .orElseThrow(() -> new IllegalArgumentException("Helytelen nyelv kód: " + languageCode));
         ppt.setLanguage(language);
 
         Type type = typeRepository.findById(typeId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid type ID: " + typeId));
+                .orElseThrow(() -> new IllegalArgumentException("Helytelen típus ID: " + typeId));
         ppt.setType(type);
 
         ppt = pptRepository.save(ppt);
@@ -162,7 +162,7 @@ public class FileService {
     @Transactional
     public void addQuestion(Long pptId, String questionText, boolean answer) throws ConstraintViolationException {
         Ppt ppt = pptRepository.findById(pptId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid PPT ID: " + pptId));
+                .orElseThrow(() -> new IllegalArgumentException("Helytelen ppt ID: " + pptId));
 
         questionText = questionText.trim().replaceAll("\\s+", " ");
 
@@ -177,7 +177,7 @@ public class FileService {
             for (ConstraintViolation<Question> violation : violations) {
                 sb.append(violation.getMessage()).append("\n");
             }
-            throw new ConstraintViolationException("Validation errors occurred: " + sb.toString(), violations);
+            throw new ConstraintViolationException("Validálási hibák: " + sb.toString(), violations);
         }
 
         questionRepository.save(question);
@@ -188,11 +188,11 @@ public class FileService {
     @Transactional
     public String uploadQuestionsFromExcel(MultipartFile file, Long pptId) throws Exception {
         if (!file.getOriginalFilename().endsWith(".xlsx") && !file.getOriginalFilename().endsWith(".xls")) {
-            throw new IllegalArgumentException("Invalid file format. Please upload an Excel file.");
+            throw new IllegalArgumentException("Érvénytelen fájlformátum. Kérjük Excel fájlt töltsön fel.");
         }
 
         Ppt ppt = pptRepository.findById(pptId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid PPT ID: " + pptId));
+                .orElseThrow(() -> new IllegalArgumentException("Helytelen ppt ID: " + pptId));
 
         int insertedCount = 0;
         int duplicateCount = 0;
@@ -278,7 +278,7 @@ public class FileService {
                     for (ConstraintViolation<Question> violation : violations) {
                         sb.append(violation.getMessage()).append("\n");
                     }
-                    throw new ConstraintViolationException("Validation errors occurred: " + sb.toString(), violations);
+                    throw new ConstraintViolationException("Validálási hibák: " + sb.toString(), violations);
                 }
 
                 questionRepository.save(question);
@@ -286,7 +286,7 @@ public class FileService {
             }
         }
 
-        return String.format("Questions uploaded successfully! %d new questions added, %d duplicates skipped, %d rows skipped due to missing data.", insertedCount, duplicateCount, missingDataCount);
+        return String.format("A kérdések feltöltése sikeres volt! %d új kérdés hozzáadva, %d duplikált kérdés kihagyva, %d sor kihagyva hiányzó adatok miatt.", insertedCount, duplicateCount, missingDataCount);
     }
 
 
@@ -304,10 +304,10 @@ public class FileService {
     @Transactional
     public void deletePptAndRelatedData(Long pptId) {
         Ppt ppt = pptRepository.findById(pptId)
-                .orElseThrow(() -> new IllegalArgumentException("PPT not found with ID: " + pptId));
+                .orElseThrow(() -> new IllegalArgumentException("PPT nem található az ID-val: " + pptId));
 
         if (ppt.isActive()) {
-            throw new IllegalStateException("Cannot delete the active PPT. Please change the active PPT before deleting.");
+            throw new IllegalStateException("Ppt nem törölhető. Kérlek frissítsd az oldalt!");
         }
         List<Image> images = imageRepository.findByPptId(pptId);
         imageRepository.deleteAll(images);

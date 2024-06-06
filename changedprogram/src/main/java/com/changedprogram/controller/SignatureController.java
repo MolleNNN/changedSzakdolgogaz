@@ -12,10 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.changedprogram.EncryptionUtil;
-import com.changedprogram.repository.PptRepository;
-import com.changedprogram.repository.ResultRepository;
-import com.changedprogram.repository.UserRepository;
 import com.changedprogram.service.SignatureService;
 
 import jakarta.servlet.http.HttpSession;
@@ -58,7 +54,7 @@ public class SignatureController {
         logger.info("Finalizing signature for user ID: {} and PPT ID: {}", userId, pptId);
 
         if (userId == null || pptId == null) {
-            redirectAttributes.addFlashAttribute("error", "Session data missing.");
+            redirectAttributes.addFlashAttribute("error", "A munkamenet adatai hiányoznak.");
             logSessionAttributes(session); // Log session attributes
             return "redirect:/error";
         }

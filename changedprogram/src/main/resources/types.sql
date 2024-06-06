@@ -1,1 +1,1 @@
-INSERT INTO type (name, valid) VALUES ('EHS oktatás', 12);
+INSERT INTO Type (name, valid) VALUES ('EHS oktatás', 12);

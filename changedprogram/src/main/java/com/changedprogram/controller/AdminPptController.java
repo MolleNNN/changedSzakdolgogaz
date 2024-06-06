@@ -1,18 +1,15 @@
 package com.changedprogram.controller;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -31,7 +28,6 @@ import com.changedprogram.repository.PptRepository;
 import com.changedprogram.repository.QuestionRepository;
 import com.changedprogram.repository.TypeRepository;
 import com.changedprogram.service.AdminPptService;
-import com.changedprogram.service.AdminService;
 import com.changedprogram.service.FileService;
 
 import jakarta.servlet.http.HttpSession;
@@ -42,35 +38,20 @@ public class AdminPptController {
 
     @Autowired
     private PptRepository pptRepository;
-
     @Autowired
     private ImageRepository imageRepository;
-
     @Autowired
     private QuestionRepository questionRepository;
-
     @Autowired
     private FileService fileService;
-    
     @Autowired
     private LanguageRepository languageRepository;
     @Autowired
     private TypeRepository typeRepository;
     @Autowired
-    private AdminService adminService;
-    @Autowired
     private AdminPptService adminPptService;
 	
-/*	
-    @GetMapping("/admin/ppt")
-    public String pptPage(Model model) {
-        List<Ppt> activePpts = pptRepository.findByIsActiveTrue();
-        List<Ppt> allPpts = pptRepository.findAll();
-        model.addAttribute("activePpts", activePpts);
-        model.addAttribute("allPpts", allPpts);
-        return "ppt";
-    }
-  */
+
     @GetMapping("/admin/ppt")
     public String pptPage(Model model) {
         List<PptDTO> allPpts = adminPptService.getAllPpts();
@@ -84,8 +65,6 @@ public class AdminPptController {
         model.addAttribute("pptWithQuestions", pptWithQuestions);
         model.addAttribute("allTypes", allTypes);
         model.addAttribute("activePptIds", activePptIds);
-
-        // Add these lines to pass languages and types
         model.addAttribute("languages", languageRepository.findAll());
         model.addAttribute("types", typeRepository.findAll());
 
@@ -94,12 +73,17 @@ public class AdminPptController {
 
 
     @PostMapping("/changeActivePpt")
-    public String changeActivePpt(@RequestParam List<Long> pptIds, RedirectAttributes redirectAttributes) {
+    public String changeActivePpt(@RequestParam(required = false) List<Long> pptIds, RedirectAttributes redirectAttributes) {
         try {
-            adminPptService.setActivePpts(pptIds);
-            redirectAttributes.addFlashAttribute("successMessage", "PPTs activated successfully!");
+            if (pptIds == null || pptIds.isEmpty()) {
+                adminPptService.setAllPptsInactive();
+                redirectAttributes.addFlashAttribute("successMessage", "Minden oktatás inaktívvá lett állítva!");
+            } else {
+                adminPptService.setActivePpts(pptIds);
+                redirectAttributes.addFlashAttribute("successMessage", "Az oktatások státusza sikeresen módosítva!");
+            }
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to activate PPTs: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Hiba a módosításban: " + e.getMessage());
         }
         return "redirect:/admin/ppt";
     }
@@ -115,27 +99,27 @@ public class AdminPptController {
         name = name.trim();
 
         if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Please select a file to upload.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Kérlek válassz egy fájlt a feltöltéshez!");
             return "redirect:/admin/ppt";
         }
 
         // Validate file type
         if (!isPptFile(file)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Invalid file type. Please upload a PPT file (.ppt or .pptx).");
+            redirectAttributes.addFlashAttribute("errorMessage", "Érvénytelen fájltípus. Kérlek, PPT fájlt tölts fel(.ppt vagy .pptx).");
             return "redirect:/admin/ppt";
         }
 
         // Validate PPT name uniqueness
         if (pptRepository.existsByFilename(name)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "A PPT with this name already exists. Please choose a different name.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Egy PPT ezzel a névvel már létezik. Kérjük, válassz egy másik nevet.");
             return "redirect:/admin/ppt";
         }
 
         try {
             fileService.storePpt(name, file, languageCode, typeId);
-            redirectAttributes.addFlashAttribute("successMessage", "PPT uploaded successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Oktatás sikeresen hozzáadva!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to upload PPT: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Hiba az oktatás feltöltése közben: " + e.getMessage());
             e.printStackTrace(); // Log the exception stack trace for debugging
         }
         return "redirect:/admin/ppt";
@@ -157,13 +141,13 @@ public class AdminPptController {
         
         // Validate that the name has at least 3 non-space characters
         if (name.replaceAll("\\s+", "").length() < 3) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Type name must have at least 3 non-space characters.");
+            redirectAttributes.addFlashAttribute("errorMessage", "A típusnévnek legalább 3 szóköz nélküli karaktert kell tartalmaznia.");
             return "redirect:/admin/ppt";
         }
 
         // Check if the name already exists in the Type repository
         if (typeRepository.existsByName(name)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Type name already exists!");
+            redirectAttributes.addFlashAttribute("errorMessage", "A típus név már létezik!");
             return "redirect:/admin/ppt";
         }
 
@@ -173,7 +157,7 @@ public class AdminPptController {
         type.setValid(valid);
         typeRepository.save(type);
 
-        redirectAttributes.addFlashAttribute("successMessage", "Type added successfully!");
+        redirectAttributes.addFlashAttribute("successMessage", "Típus sikeresen hozzáadva!");
         return "redirect:/admin/ppt";
     }
 
@@ -186,25 +170,25 @@ public class AdminPptController {
         name = name.trim();
 
         if (name.replaceAll("\\s+", "").length() < 3) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Type name must have at least 3 non-space characters.");
+            redirectAttributes.addFlashAttribute("errorMessage", "A típusnévnek legalább 3 szóköz nélküli karaktert kell tartalmaznia.");
             return "redirect:/admin/ppt";
         }
 
         // Check if the name exists for any type other than the current one
         if (typeRepository.existsByNameAndIdNot(name, typeId)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Type name already exists!");
+            redirectAttributes.addFlashAttribute("errorMessage", "A típus név már létezik!");
             return "redirect:/admin/ppt";
         }
 
         try {
             Type type = typeRepository.findById(typeId)
-                                       .orElseThrow(() -> new IllegalArgumentException("Invalid type ID: " + typeId));
+                                       .orElseThrow(() -> new IllegalArgumentException("Helytelen típus ID: " + typeId));
             type.setName(name);
             type.setValid(valid);
             typeRepository.save(type);
-            redirectAttributes.addFlashAttribute("successMessage", "Type updated successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Típus sikeresen módosítva!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update type: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Hiba a típus módosytásaközben: " + e.getMessage());
         }
         return "redirect:/admin/ppt";
     }
@@ -238,7 +222,7 @@ public class AdminPptController {
             return "redirect:/admin/ppt"; // Redirect if pptId is not found in session
         }
         Ppt ppt = pptRepository.findById(pptId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid PPT ID: " + pptId));
+            .orElseThrow(() -> new IllegalArgumentException("Helytelen Ppt ID: " + pptId));
         List<Question> questions = questionRepository.findByPptIdOrderByTextAsc(pptId);
         List<Question> deletableQuestions = adminPptService.getDeletableQuestionsByPptId(pptId);
         model.addAttribute("pptId", pptId);
@@ -263,14 +247,14 @@ public class AdminPptController {
         
         // Check if the question is unique for the given PPT ID
         if (!adminPptService.isQuestionUnique(pptId, normalizedQuestion)) {
-            redirectAttributes.addFlashAttribute("error", "A question with the same text already exists.");
+            redirectAttributes.addFlashAttribute("error", "Ugyanezzel a szöveggel már létezik egy kérdés.");
             return "redirect:/admin/addquestions";
         }
 
         try {
             // Add the question using the normalized text
             fileService.addQuestion(pptId, normalizedQuestion, answer);
-            redirectAttributes.addFlashAttribute("message", "Question added successfully!");
+            redirectAttributes.addFlashAttribute("message", "Kérdés sikeresen hozzáadva!");
         } catch (ConstraintViolationException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -286,27 +270,7 @@ public class AdminPptController {
         model.addAttribute("types", types);
         return "newPpt";
     }
-    
- /*   @PostMapping("/uploadPpt")
-    public String handleFileUpload(@RequestParam("name") String name,
-                                   @RequestParam("file") MultipartFile file,
-                                   @RequestParam("languageCode") String languageCode,
-                                   @RequestParam("typeId") Long typeId,
-                                   HttpSession session,
-                                   RedirectAttributes redirectAttributes) {
-        try {
-            Ppt ppt = fileService.storePpt(name, file, languageCode, typeId);
-            session.setAttribute("pptId", ppt.getId());  // Store pptId in session
-            redirectAttributes.addFlashAttribute("message", "You successfully uploaded " + name + "!");
-            return "redirect:/admin/addquestions";  // Redirect to add questions page
-        } catch (IOException | InvalidFormatException e) {
-            redirectAttributes.addFlashAttribute("message", "Failed to upload " + name + ": " + e.getMessage());
-            return "redirect:/admin/new";
-        }
-    }
-*/
-
-    
+  
     @PostMapping("/admin/modifyQuestion")
     @Transactional
     public String modifyQuestion(
@@ -317,14 +281,14 @@ public class AdminPptController {
         try {
             // Find the existing question
             Question existingQuestion = questionRepository.findById(questionId)
-                    .orElseThrow(() -> new IllegalStateException("Question not found with ID: " + questionId));
+                    .orElseThrow(() -> new IllegalStateException("A kérdés nem található ezzel az ID-val: " + questionId));
             
             // Normalize the question text
             String normalizedQuestion = questionText.trim().replaceAll("\\s+", " ");
 
             // Check if the question is unique for the given PPT ID, excluding the current question
             if (!adminPptService.isQuestionUniqueForModification(existingQuestion.getPpt().getId(), normalizedQuestion, questionId)) {
-                redirectAttributes.addFlashAttribute("error", "A question with the same text already exists.");
+                redirectAttributes.addFlashAttribute("error", "Ugyanezzel a szöveggel már létezik egy kérdés.");
                 return "redirect:/admin/addquestions";
             }
 
@@ -336,14 +300,14 @@ public class AdminPptController {
             questionRepository.save(existingQuestion);
 
             // Set success message
-            redirectAttributes.addFlashAttribute("message", "Question updated successfully!");
+            redirectAttributes.addFlashAttribute("message", "A kérdés sikeresen módosítva!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
             // Generic exception handling
-            redirectAttributes.addFlashAttribute("error", "Failed to update the question: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Hiba a kérdés módosítása közben: " + e.getMessage());
         }
         return "redirect:/admin/addquestions"; // Redirect to the same page to display the message
     }
@@ -355,9 +319,9 @@ public class AdminPptController {
     public String deleteQuestion(@RequestParam("questionId") Long questionId, RedirectAttributes redirectAttributes) {
         try {
             questionRepository.deleteById(questionId);
-            redirectAttributes.addFlashAttribute("message", "Question deleted successfully!");
+            redirectAttributes.addFlashAttribute("message", "A kérdés sikeresen törölve!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to delete the question: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Hiba a kérdés törlése közben: " + e.getMessage());
         }
         return "redirect:/admin/addquestions"; // Redirect to the same page to display the message
     }
@@ -375,53 +339,30 @@ public class AdminPptController {
     public String deletePpt(@RequestParam Long pptId, RedirectAttributes redirectAttributes) {
         try {
             fileService.deletePptAndRelatedData(pptId);
-            redirectAttributes.addFlashAttribute("successMessage", "PPT deleted successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Oktatás sikeresen törölve!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to delete PPT: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Hiba az oktatás törlése közben: " + e.getMessage());
         }
         return "redirect:/admin/ppt";
     }
-
-    
-/*
-    @PostMapping("/admin/deletePpt/{pptId}")
-    public String deletePpt(@PathVariable Long pptId, RedirectAttributes redirectAttributes) {
-        try {
-            fileService.deletePptAndRelatedData(pptId);
-            redirectAttributes.addFlashAttribute("message", "PPT deleted successfully!");
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message", "Failed to delete PPT: " + e.getMessage());
-        }
-        return "redirect:/admin/ppt";
-    }*/
-    
-    
-    
-    
-    
-    
-    
-    
+   
     @PostMapping("/admin/uploadQuestions")
     public String uploadQuestions(@RequestParam("file") MultipartFile file,
                                   HttpSession session,
                                   RedirectAttributes redirectAttributes) {
         Long pptId = (Long) session.getAttribute("pptId");
         if (pptId == null) {
-            redirectAttributes.addFlashAttribute("error", "No PPT selected.");
+            redirectAttributes.addFlashAttribute("error", "Nincs kiválasztva Ppt!");
             return "redirect:/admin/ppt";
         }
         try {
             String resultMessage = fileService.uploadQuestionsFromExcel(file, pptId);
             redirectAttributes.addFlashAttribute("message", resultMessage);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to upload questions: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Hiba a kérdés feltöltése közben: " + e.getMessage());
         }
         return "redirect:/admin/addquestions";
     }
-    
-    
-    
     
     @GetMapping("/admin/getPptDetails")
     @ResponseBody
@@ -429,8 +370,6 @@ public class AdminPptController {
         PptDTO ppt = adminPptService.getPptById(pptId);
         return ResponseEntity.ok(ppt);
     }
-
-
 
     @PostMapping("/admin/updatePpt")
     public String updatePpt(@RequestParam Long pptId,
@@ -441,26 +380,16 @@ public class AdminPptController {
         name = name.trim();
 
         if (pptRepository.existsByFilenameAndIdNot(name, pptId)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "A PPT with this name already exists. Please choose a different name.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Egy PPT ezzel a névvel már létezik. Kérjük, válassz egy másik nevet.");
             return "redirect:/admin/ppt";
         }
 
         try {
             adminPptService.updatePpt(pptId, name, languageCode, typeId);
-            redirectAttributes.addFlashAttribute("successMessage", "PPT updated successfully!");
+            redirectAttributes.addFlashAttribute("successMessage", "Ppt sikeresen módosítva!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Failed to update PPT: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Hiba a Ppt módosítása közben: " + e.getMessage());
         }
         return "redirect:/admin/ppt";
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    } 
 }

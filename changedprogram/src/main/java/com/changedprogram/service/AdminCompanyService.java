@@ -1,5 +1,6 @@
 package com.changedprogram.service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -46,7 +47,7 @@ public class AdminCompanyService {
 
         Optional<Company> existingCompany = companyRepository.findByNameIgnoreCase(formattedName);
         if (existingCompany.isPresent()) {
-            throw new IllegalArgumentException("Company already exists!");
+            throw new IllegalArgumentException("A cég már létezik!");
         }
 
         return companyRepository.save(company);
@@ -56,11 +57,11 @@ public class AdminCompanyService {
         newName = newName.trim();
         validateCompanyName(newName);
         Company existingCompany = companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("Company not found, please refresh the page"));
+                .orElseThrow(() -> new IllegalArgumentException("A cég nem található, frissítsd az oldalt!"));
 
         String formattedName = formatCompanyName(newName);
         if (companyRepository.existsByName(formattedName)) {
-            throw new IllegalArgumentException("Company already exists.");
+            throw new IllegalArgumentException("A cég már létezik!");
         }
 
         existingCompany.setName(formattedName);
@@ -70,15 +71,16 @@ public class AdminCompanyService {
     public List<Company> getDeletableCompanies() {
         return companyRepository.findAll().stream()
                 .filter(company -> company.getUsers().isEmpty())
+                .sorted(Comparator.comparing(Company::getName))
                 .collect(Collectors.toList());
     }
 
     public void deleteCompany(Long companyId) {
         Company company = companyRepository.findById(companyId)
-                .orElseThrow(() -> new IllegalArgumentException("Company not found, please refresh the page"));
+                .orElseThrow(() -> new IllegalArgumentException("A cég nem található, frissítsd az oldalt!"));
 
         if (!company.getUsers().isEmpty()) {
-            throw new IllegalArgumentException("Cannot delete company because it is in use, please refresh the page");
+            throw new IllegalArgumentException("A cég nem törölhető mivel használatban van!");
         }
 
         companyRepository.delete(company);
@@ -99,11 +101,11 @@ public class AdminCompanyService {
 
     private void validateCompanyName(String name) {
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Company name cannot be blank.");
+            throw new IllegalArgumentException("A cég neve nem lehet üres!");
         }
 
         if (name.length() < 2 || name.length() > 255) {
-            throw new IllegalArgumentException("Company name must be between 2 and 255 characters.");
+            throw new IllegalArgumentException("A cég nevének 2 és 255 karakter között kell lennie");
         }
         
         // Removed pattern matching to allow any character

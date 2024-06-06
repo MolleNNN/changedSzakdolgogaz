@@ -58,8 +58,12 @@ public class UserFormModel {
     }
 
     public void setName(String name) {
-        char[] delimiters = { ' ', '-', '.' };
-        this.name = WordUtils.capitalizeFully(name.trim(), delimiters);
+        if (name != null) {
+            char[] delimiters = { ' ', '-', '.' };
+            this.name = WordUtils.capitalizeFully(name.trim(), delimiters);
+        } else {
+            this.name = null;
+        }
     }
 
     public Date getBirthdate() {

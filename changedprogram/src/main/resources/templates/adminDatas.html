@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>User Data</title>
+    <title>Felhasználói adatok</title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.0/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/css/nav.css}"> <!-- Link to custom CSS -->
 
@@ -184,7 +184,7 @@ table.dataTable.no-footer {
             <h2 class="mb-0">Felhasználói adatok</h2>
         </div>
         <div class="card-body">
-            <div class="table-responsive"> <!-- Add this div for responsive table -->
+            <div class="table-responsive"> <!-- div for responsive table -->
                 <table id="userTable" class="display" style="width:100%">
                     <thead>
                         <tr>

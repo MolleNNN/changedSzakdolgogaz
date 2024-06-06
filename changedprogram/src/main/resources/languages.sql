@@ -1,2 +1,2 @@
-INSERT INTO language (code, name) VALUES ('hu', 'Hungarian');
-INSERT INTO language (code, name) VALUES ('en', 'English');
+INSERT INTO Language (code, name) VALUES ('hu', 'Magyar');
+INSERT INTO Language (code, name) VALUES ('en', 'Angol');

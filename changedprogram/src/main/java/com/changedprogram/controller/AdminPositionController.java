@@ -3,7 +3,6 @@ package com.changedprogram.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +46,7 @@ public class AdminPositionController {
         try {
             Position savedPosition = adminPositionService.addPosition(position);
             response.put("success", true);
-            response.put("message", "Position added successfully!");
+            response.put("message", "Pozíció sikeresen törölve!");
             response.put("position", savedPosition);
         } catch (ConstraintViolationException e) {
             response.put("success", false);
@@ -73,7 +72,7 @@ public class AdminPositionController {
         try {
             adminPositionService.updatePosition(positionId, newName);
             response.put("success", true);
-            response.put("message", "Position updated successfully.");
+            response.put("message", "Pozíció sikeresen módosítva!");
         } catch (IllegalArgumentException e) {
             response.put("success", false);
             response.put("error", e.getMessage());
@@ -94,7 +93,7 @@ public class AdminPositionController {
         try {
             adminPositionService.deletePosition(positionId);
             response.put("success", true);
-            response.put("message", "Position deleted successfully!");
+            response.put("message", "Pozíció sikeresen törölve!");
         } catch (IllegalArgumentException e) {
             response.put("success", false);
             response.put("message", e.getMessage());

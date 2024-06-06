@@ -28,10 +28,10 @@
             text-align: center;
         }
         .card-custom-margin {
-            margin-top: 20px; /* Add your custom margin here */
+            margin-top: 20px; /*custom margin */
         }
         .card-body {
-            padding-bottom: 0.5rem; /* Adjust the padding as needed */
+            padding-bottom: 0.5rem; /* Adjust the padding */
         }
         .col-md-12.mt-2.d-flex.justify-content-between {
             margin-bottom: 0; /* Remove margin-bottom */
@@ -485,6 +485,7 @@
                         responseChartCanvas.style.display = 'none';
                         noDataMessage.style.display = 'block';
                         totalResponsesDiv.textContent = 'Összes válasz: -';
+                        selectedQuestionLabel.style.display = 'none';  // Hide the label if no data is available
                     } else {
                         responseChartCanvas.style.display = 'block';
                         noDataMessage.style.display = 'none';
